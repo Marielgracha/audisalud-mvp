@@ -41,13 +41,21 @@ const CARPETAS_EXPEDIENTE = ["Talento Humano","Infraestructura","Dotacion","Medi
 const CARPETAS_INSTITUCIONAL = ["Seguridad del Paciente","PGIRASA","SST","Manuales","Procedimientos","Programas","Planes","Protocolos","Formatos"];
 const EMAILS_PROFESIONALES = Object.keys(PROFESIONALES).filter(e => e !== "marielgracha02@gmail.com");
 
+const S = {
+  card: { background:"#FFFFFF", borderRadius:16, padding:24, boxShadow:"0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04)", border:"1px solid rgba(0,0,0,.06)" } as React.CSSProperties,
+  input: { width:"100%", padding:"11px 14px", borderRadius:10, border:"1px solid #E8E5E0", fontSize:13, outline:"none", fontFamily:"inherit", boxSizing:"border-box" as const, background:"#FAFAF9", color:"#18181B", transition:"border-color .15s" },
+  label: { fontSize:10, textTransform:"uppercase" as const, letterSpacing:".08em", color:"#A1A1AA", marginBottom:6, display:"block", fontWeight:600 },
+};
+
 function getEstado(fecha: string) {
-  const hoy = new Date();
-  const vence = new Date(fecha);
-  const dias = Math.ceil((vence.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-  if (dias < 0) return { label: "Vencido", color: "#B91C1C", bg: "#FEF2F2", punto: "#B91C1C" };
-  if (dias <= 60) return { label: dias + " dias", color: "#B45309", bg: "#FFFBEB", punto: "#B45309" };
-  return { label: "Vigente", color: "#15803D", bg: "#F0FDF4", punto: "#15803D" };
+  const dias = Math.ceil((new Date(fecha).getTime() - new Date().getTime()) / 86400000);
+  if (dias < 0) return { label:"Vencido", color:"#B91C1C", bg:"#FEF2F2", punto:"#EF4444" };
+  if (dias <= 60) return { label:dias + " dias", color:"#B45309", bg:"#FFFBEB", punto:"#F59E0B" };
+  return { label:"Vigente", color:"#15803D", bg:"#F0FDF4", punto:"#22C55E" };
+}
+
+function Chip({ label, color, bg }: { label: string; color: string; bg: string }) {
+  return <span style={{ padding:"3px 10px", borderRadius:99, fontSize:10, fontWeight:700, background:bg, color, letterSpacing:".04em" }}>{label}</span>;
 }
 
 function ModalSubir({ carpeta, seccion, email, p2, onClose }: { carpeta: string; seccion: string; email: string; p2: string; onClose: () => void }) {
@@ -57,6 +65,7 @@ function ModalSubir({ carpeta, seccion, email, p2, onClose }: { carpeta: string;
   const [docs, setDocs] = useState<any[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const rutaBase = email + "/" + seccion + "/" + carpeta;
+  const colorBtn = p2 === "#FFFFFF" ? "#1A3A5C" : p2;
 
   const cargarDocs = async () => {
     const { data } = await sb.storage.from("documentos").list(rutaBase);
@@ -68,10 +77,9 @@ function ModalSubir({ carpeta, seccion, email, p2, onClose }: { carpeta: string;
   const subir = async () => {
     if (!archivo) return;
     setSubiendo(true);
-    const ruta = rutaBase + "/" + Date.now() + "_" + archivo.name;
-    const { error } = await sb.storage.from("documentos").upload(ruta, archivo);
+    const { error } = await sb.storage.from("documentos").upload(rutaBase + "/" + Date.now() + "_" + archivo.name, archivo);
     if (error) setMensaje("Error: " + error.message);
-    else { setMensaje("Documento subido!"); setArchivo(null); cargarDocs(); }
+    else { setMensaje("Documento subido exitosamente"); setArchivo(null); cargarDocs(); }
     setSubiendo(false);
   };
 
@@ -85,45 +93,56 @@ function ModalSubir({ carpeta, seccion, email, p2, onClose }: { carpeta: string;
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
 
-  const colorBtn = p2 === "#FFFFFF" ? "#1A3A5C" : p2;
-
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:100 }} onClick={onClose}>
-      <div style={{ background:"#fff", borderRadius:14, padding:28, width:500, maxHeight:"80vh", overflowY:"auto" as const }} onClick={e => e.stopPropagation()}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-          <div style={{ fontSize:18, fontFamily:"Georgia,serif" }}>{carpeta}</div>
-          <button onClick={onClose} style={{ background:"none", border:"none", fontSize:22, cursor:"pointer", color:"#999" }}>x</button>
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.4)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:100, padding:20 }} onClick={onClose}>
+      <div style={{ background:"#fff", borderRadius:20, padding:32, width:"100%", maxWidth:520, maxHeight:"85vh", overflowY:"auto" as const, boxShadow:"0 20px 60px rgba(0,0,0,.2)" }} onClick={e => e.stopPropagation()}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
+          <div>
+            <div style={{ fontSize:20, fontFamily:"Georgia,serif", color:"#18181B" }}>{carpeta}</div>
+            <div style={{ fontSize:12, color:"#A1A1AA", marginTop:2 }}>Gestiona los documentos de esta carpeta</div>
+          </div>
+          <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", background:"#F4F4F2", border:"none", fontSize:16, cursor:"pointer", color:"#52525B", display:"flex", alignItems:"center", justifyContent:"center" }}>x</button>
         </div>
-        <div style={{ border:"2px dashed #E5E5E3", borderRadius:10, padding:24, textAlign:"center", marginBottom:16, cursor:"pointer", background:"#F8F8F7" }}
+
+        <div style={{ border:"2px dashed #E8E5E0", borderRadius:12, padding:28, textAlign:"center", marginBottom:20, cursor:"pointer", background:"#FAFAF9", transition:"all .15s" }}
           onClick={() => fileRef.current?.click()}
           onDragOver={e => e.preventDefault()}
           onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) setArchivo(f); }}>
-          <div style={{ fontSize:28, marginBottom:8 }}>📎</div>
-          <div style={{ fontSize:13, color:"#52525B" }}>{archivo ? archivo.name : "Haz clic o arrastra un archivo aqui"}</div>
-          <div style={{ fontSize:11, color:"#999", marginTop:4 }}>PDF - Word - Excel - JPG - PNG - ZIP</div>
+          <div style={{ fontSize:32, marginBottom:10 }}>📎</div>
+          <div style={{ fontSize:14, color:"#52525B", fontWeight:500, marginBottom:4 }}>{archivo ? archivo.name : "Arrastra o haz clic para seleccionar"}</div>
+          <div style={{ fontSize:11, color:"#A1A1AA" }}>PDF · Word · Excel · JPG · PNG · ZIP</div>
           <input ref={fileRef} type="file" style={{ display:"none" }} onChange={e => e.target.files && setArchivo(e.target.files[0])} />
         </div>
+
         {archivo && (
           <button onClick={subir} disabled={subiendo}
-            style={{ width:"100%", padding:11, borderRadius:8, border:"none", background:colorBtn, color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", marginBottom:12 }}>
+            style={{ width:"100%", padding:13, borderRadius:10, border:"none", background:colorBtn, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", marginBottom:16, letterSpacing:".02em" }}>
             {subiendo ? "Subiendo..." : "Subir documento"}
           </button>
         )}
-        {mensaje && <div style={{ padding:"9px 12px", borderRadius:8, background:mensaje.includes("Error")?"#FEF2F2":"#F0FDF4", color:mensaje.includes("Error")?"#B91C1C":"#15803D", fontSize:12, marginBottom:12, textAlign:"center" }}>{mensaje}</div>}
+
+        {mensaje && (
+          <div style={{ padding:"10px 14px", borderRadius:10, background:mensaje.includes("Error")?"#FEF2F2":"#F0FDF4", color:mensaje.includes("Error")?"#B91C1C":"#15803D", fontSize:12, marginBottom:16, textAlign:"center", fontWeight:500 }}>
+            {mensaje}
+          </div>
+        )}
+
         {docs.length > 0 && (
           <div>
-            <div style={{ fontSize:12, color:"#999", marginBottom:10, fontWeight:600 }}>Documentos cargados</div>
+            <div style={{ fontSize:11, color:"#A1A1AA", marginBottom:12, fontWeight:700, textTransform:"uppercase" as const, letterSpacing:".06em" }}>Documentos ({docs.length})</div>
             {docs.map((doc, i) => (
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom:"1px solid #F0F0EE" }}>
-                <div style={{ fontSize:16 }}>📄</div>
-                <div style={{ flex:1, fontSize:12, color:"#18181B" }}>{doc.name.replace(/^\d+_/, "")}</div>
-                <button onClick={() => ver(doc.name)} style={{ padding:"4px 10px", borderRadius:6, border:"1px solid #E5E5E3", background:"transparent", cursor:"pointer", fontSize:11 }}>Ver</button>
-                <button onClick={() => eliminar(doc.name)} style={{ padding:"4px 10px", borderRadius:6, border:"1px solid #FECACA", background:"transparent", cursor:"pointer", fontSize:11, color:"#B91C1C" }}>Eliminar</button>
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 0", borderBottom:"1px solid #F4F4F2" }}>
+                <div style={{ width:34, height:34, borderRadius:8, background:"#F4F4F2", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>📄</div>
+                <div style={{ flex:1, fontSize:12, color:"#18181B", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" as const }}>{doc.name.replace(/^\d+_/, "")}</div>
+                <button onClick={() => ver(doc.name)} style={{ padding:"5px 12px", borderRadius:7, border:"1px solid #E8E5E0", background:"#FAFAF9", cursor:"pointer", fontSize:11, color:"#52525B", fontWeight:500 }}>Ver</button>
+                <button onClick={() => eliminar(doc.name)} style={{ padding:"5px 12px", borderRadius:7, border:"1px solid #FECACA", background:"#FEF2F2", cursor:"pointer", fontSize:11, color:"#B91C1C", fontWeight:500 }}>Eliminar</button>
               </div>
             ))}
           </div>
         )}
-        {docs.length === 0 && !archivo && <div style={{ textAlign:"center", color:"#999", fontSize:12, padding:"16px 0" }}>No hay documentos aun</div>}
+        {docs.length === 0 && !archivo && (
+          <div style={{ textAlign:"center", color:"#A1A1AA", fontSize:13, padding:"20px 0" }}>No hay documentos en esta carpeta</div>
+        )}
       </div>
     </div>
   );
@@ -131,19 +150,20 @@ function ModalSubir({ carpeta, seccion, email, p2, onClose }: { carpeta: string;
 
 function SeccionCarpetas({ carpetas, seccion, email, p2 }: { carpetas: string[]; seccion: string; email: string; p2: string }) {
   const [carpetaAbierta, setCarpetaAbierta] = useState<string | null>(null);
+  const colorAcento = p2 === "#FFFFFF" ? "#1A3A5C" : p2;
   return (
     <div>
       {carpetaAbierta && <ModalSubir carpeta={carpetaAbierta} seccion={seccion} email={email} p2={p2} onClose={() => setCarpetaAbierta(null)} />}
-      <p style={{ fontSize:13, color:"#666", marginBottom:16 }}>Haz clic en una carpeta para ver y subir documentos.</p>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(170px,1fr))", gap:12 }}>
+      <p style={{ fontSize:13, color:"#71717A", marginBottom:20, lineHeight:1.6 }}>Selecciona una carpeta para gestionar sus documentos.</p>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:14 }}>
         {carpetas.map((nombre, i) => (
           <div key={i} onClick={() => setCarpetaAbierta(nombre)}
-            style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:18, cursor:"pointer" }}
-            onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,.1)")}
-            onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}>
-            <div style={{ fontSize:24, marginBottom:8 }}>📁</div>
-            <div style={{ fontSize:13, fontWeight:600, color:"#18181B" }}>{nombre}</div>
-            <div style={{ fontSize:11, color:"#999", marginTop:6 }}>Abrir carpeta</div>
+            style={{ ...S.card, cursor:"pointer", transition:"all .2s", padding:20 }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,.1)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04)"; }}>
+            <div style={{ width:40, height:40, borderRadius:10, background:colorAcento + "15", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:12, fontSize:20 }}>📁</div>
+            <div style={{ fontSize:13, fontWeight:600, color:"#18181B", marginBottom:4 }}>{nombre}</div>
+            <div style={{ fontSize:11, color:colorAcento, fontWeight:500 }}>Abrir carpeta →</div>
           </div>
         ))}
       </div>
@@ -168,10 +188,9 @@ function SeccionVencimientos({ email, p2, esMariel }: { email: string; p2: strin
 
   const agregar = async () => {
     if (!nuevo.documento || !nuevo.fecha_vencimiento) { setMensaje("Completa el documento y la fecha"); return; }
-    const datos = esMariel ? nuevo : { ...nuevo, profesional_email: email };
-    const { error } = await sb.from("vencimientos").insert([datos]);
+    const { error } = await sb.from("vencimientos").insert([esMariel ? nuevo : { ...nuevo, profesional_email: email }]);
     if (error) setMensaje("Error: " + error.message);
-    else { setMensaje("Vencimiento registrado!"); setNuevo({ documento: "", categoria: "", fecha_vencimiento: "", profesional_email: email }); cargar(); }
+    else { setMensaje("Vencimiento registrado"); setNuevo({ documento: "", categoria: "", fecha_vencimiento: "", profesional_email: email }); cargar(); }
   };
 
   const eliminar = async (id: string) => {
@@ -179,58 +198,67 @@ function SeccionVencimientos({ email, p2, esMariel }: { email: string; p2: strin
     cargar();
   };
 
-  const vencidos = vencimientos.filter(v => getEstado(v.fecha_vencimiento).punto === "#B91C1C");
-  const proximos = vencimientos.filter(v => getEstado(v.fecha_vencimiento).punto === "#B45309");
-  const vigentes = vencimientos.filter(v => getEstado(v.fecha_vencimiento).punto === "#15803D");
+  const vencidos = vencimientos.filter(v => getEstado(v.fecha_vencimiento).punto === "#EF4444").length;
+  const proximos = vencimientos.filter(v => getEstado(v.fecha_vencimiento).punto === "#F59E0B").length;
+  const vigentes = vencimientos.filter(v => getEstado(v.fecha_vencimiento).punto === "#22C55E").length;
 
   return (
     <div>
-      {mensaje && <div style={{ padding:"9px 12px", borderRadius:8, background:mensaje.includes("Error")?"#FEF2F2":"#F0FDF4", color:mensaje.includes("Error")?"#B91C1C":"#15803D", fontSize:12, marginBottom:16, textAlign:"center" }}>{mensaje}</div>}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:20 }}>
-        {[{n:vencidos.length,label:"Vencidos",c:"#B91C1C"},{n:proximos.length,label:"Por vencer",c:"#B45309"},{n:vigentes.length,label:"Vigentes",c:"#15803D"}].map((c,i) => (
-          <div key={i} style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:18 }}>
-            <div style={{ fontSize:32, fontFamily:"Georgia,serif", color:c.c }}>{c.n}</div>
-            <div style={{ fontSize:11, color:"#999", marginTop:4 }}>{c.label}</div>
+      {mensaje && <div style={{ padding:"11px 16px", borderRadius:10, background:mensaje.includes("Error")?"#FEF2F2":"#F0FDF4", color:mensaje.includes("Error")?"#B91C1C":"#15803D", fontSize:12, marginBottom:20, fontWeight:500 }}>{mensaje}</div>}
+
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:24 }}>
+        {[{n:vencidos,label:"Vencidos",c:"#EF4444",bg:"#FEF2F2"},{n:proximos,label:"Por vencer",c:"#F59E0B",bg:"#FFFBEB"},{n:vigentes,label:"Vigentes",c:"#22C55E",bg:"#F0FDF4"}].map((c,i) => (
+          <div key={i} style={{ ...S.card, padding:20 }}>
+            <div style={{ fontSize:36, fontFamily:"Georgia,serif", color:c.c, lineHeight:1 }}>{c.n}</div>
+            <div style={{ fontSize:11, color:"#71717A", marginTop:6, fontWeight:500 }}>{c.label}</div>
           </div>
         ))}
       </div>
-      <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20, marginBottom:20 }}>
-        <div style={{ fontSize:15, fontFamily:"Georgia,serif", marginBottom:16 }}>Registrar vencimiento</div>
+
+      <div style={{ ...S.card, marginBottom:20 }}>
+        <div style={{ fontSize:16, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:20 }}>Registrar vencimiento</div>
         {esMariel && (
-          <select value={nuevo.profesional_email} onChange={e => setNuevo({...nuevo, profesional_email: e.target.value})}
-            style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:"1px solid #E5E5E3", fontSize:13, marginBottom:10, outline:"none", background:"#fff" }}>
-            <option value={email}>Para mi (Mariel)</option>
-            {EMAILS_PROFESIONALES.map(e => (
-              <option key={e} value={e}>{PROFESIONALES[e]?.nombre}</option>
-            ))}
-          </select>
+          <div style={{ marginBottom:12 }}>
+            <label style={S.label}>Profesional</label>
+            <select value={nuevo.profesional_email} onChange={e => setNuevo({...nuevo, profesional_email: e.target.value})}
+              style={{ ...S.input }}>
+              <option value={email}>Para mi (Mariel)</option>
+              {EMAILS_PROFESIONALES.map(e => <option key={e} value={e}>{PROFESIONALES[e]?.nombre}</option>)}
+            </select>
+          </div>
         )}
-        <input value={nuevo.documento} onChange={e => setNuevo({...nuevo, documento: e.target.value})} placeholder="Nombre del documento"
-          style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:"1px solid #E5E5E3", fontSize:13, marginBottom:10, outline:"none", boxSizing:"border-box" as const }} />
-        <input value={nuevo.categoria} onChange={e => setNuevo({...nuevo, categoria: e.target.value})} placeholder="Categoria (ej: Talento Humano)"
-          style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:"1px solid #E5E5E3", fontSize:13, marginBottom:10, outline:"none", boxSizing:"border-box" as const }} />
-        <input type="date" value={nuevo.fecha_vencimiento} onChange={e => setNuevo({...nuevo, fecha_vencimiento: e.target.value})}
-          style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:"1px solid #E5E5E3", fontSize:13, marginBottom:12, outline:"none", boxSizing:"border-box" as const }} />
-        <button onClick={agregar}
-          style={{ padding:"9px 20px", borderRadius:8, border:"none", background:colorBtn, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer" }}>
+        <div style={{ marginBottom:12 }}>
+          <label style={S.label}>Documento</label>
+          <input value={nuevo.documento} onChange={e => setNuevo({...nuevo, documento: e.target.value})} placeholder="Ej: Poliza de responsabilidad civil" style={S.input} />
+        </div>
+        <div style={{ marginBottom:12 }}>
+          <label style={S.label}>Categoria</label>
+          <input value={nuevo.categoria} onChange={e => setNuevo({...nuevo, categoria: e.target.value})} placeholder="Ej: Talento Humano" style={S.input} />
+        </div>
+        <div style={{ marginBottom:20 }}>
+          <label style={S.label}>Fecha de vencimiento</label>
+          <input type="date" value={nuevo.fecha_vencimiento} onChange={e => setNuevo({...nuevo, fecha_vencimiento: e.target.value})} style={S.input} />
+        </div>
+        <button onClick={agregar} style={{ padding:"11px 24px", borderRadius:10, border:"none", background:colorBtn, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", letterSpacing:".02em" }}>
           Registrar
         </button>
       </div>
-      <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
-        <div style={{ fontSize:15, fontFamily:"Georgia,serif", marginBottom:16 }}>Control de vencimientos</div>
-        {vencimientos.length === 0 && <div style={{ textAlign:"center", padding:"24px 0", color:"#999", fontSize:13 }}>No hay vencimientos registrados aun</div>}
+
+      <div style={S.card}>
+        <div style={{ fontSize:16, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:20 }}>Control de vencimientos</div>
+        {vencimientos.length === 0 && <div style={{ textAlign:"center", padding:"32px 0", color:"#A1A1AA", fontSize:13 }}>No hay vencimientos registrados</div>}
         {vencimientos.map((v, i) => {
           const est = getEstado(v.fecha_vencimiento);
           return (
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 0", borderBottom: i < vencimientos.length-1 ? "1px solid #F0F0EE" : "none" }}>
-              <div style={{ width:10, height:10, borderRadius:"50%", background:est.punto, flexShrink:0 }}></div>
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"13px 0", borderBottom: i < vencimientos.length-1 ? "1px solid #F4F4F2" : "none" }}>
+              <div style={{ width:10, height:10, borderRadius:"50%", background:est.punto, flexShrink:0, boxShadow:"0 0 0 3px " + est.punto + "30" }}></div>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:13, fontWeight:600, color:"#18181B" }}>{v.documento}</div>
-                <div style={{ fontSize:11, color:"#999" }}>{v.categoria} - Vence: {new Date(v.fecha_vencimiento).toLocaleDateString("es-CO")}</div>
-                {esMariel && <div style={{ fontSize:10, color:"#A1A1AA" }}>{PROFESIONALES[v.profesional_email]?.nombre || v.profesional_email}</div>}
+                <div style={{ fontSize:11, color:"#A1A1AA", marginTop:2 }}>{v.categoria} · Vence: {new Date(v.fecha_vencimiento).toLocaleDateString("es-CO", { day:"2-digit", month:"short", year:"numeric" })}</div>
+                {esMariel && <div style={{ fontSize:11, color:"#C9A84C", marginTop:1 }}>{PROFESIONALES[v.profesional_email]?.nombre}</div>}
               </div>
-              <span style={{ padding:"3px 10px", borderRadius:99, fontSize:10, fontWeight:600, background:est.bg, color:est.color, flexShrink:0 }}>{est.label}</span>
-              <button onClick={() => eliminar(v.id)} style={{ padding:"4px 8px", borderRadius:6, border:"1px solid #FECACA", background:"transparent", cursor:"pointer", fontSize:11, color:"#B91C1C" }}>x</button>
+              <Chip label={est.label} color={est.color} bg={est.bg} />
+              <button onClick={() => eliminar(v.id)} style={{ width:28, height:28, borderRadius:"50%", border:"1px solid #FECACA", background:"#FEF2F2", cursor:"pointer", fontSize:12, color:"#B91C1C", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>x</button>
             </div>
           );
         })}
@@ -245,7 +273,7 @@ function SeccionSolicitados({ email, p2, esMariel }: { email: string; p2: string
   const [subiendo, setSubiendo] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-  const [solSeleccionada, setSolSeleccionada] = useState<string | null>(null);
+  const [solSel, setSolSel] = useState<string | null>(null);
   const colorBtn = p2 === "#FFFFFF" ? "#1A3A5C" : p2;
 
   const cargar = async () => {
@@ -261,7 +289,7 @@ function SeccionSolicitados({ email, p2, esMariel }: { email: string; p2: string
     if (!nuevo.profesional_email || !nuevo.documento) { setMensaje("Completa el profesional y el documento"); return; }
     const { error } = await sb.from("solicitudes").insert([nuevo]);
     if (error) setMensaje("Error: " + error.message);
-    else { setMensaje("Solicitud enviada!"); setNuevo({ profesional_email: "", documento: "", descripcion: "" }); cargar(); }
+    else { setMensaje("Solicitud enviada exitosamente"); setNuevo({ profesional_email: "", documento: "", descripcion: "" }); cargar(); }
   };
 
   const subirArchivo = async (sol: any, file: File) => {
@@ -278,53 +306,57 @@ function SeccionSolicitados({ email, p2, esMariel }: { email: string; p2: string
 
   return (
     <div>
-      {mensaje && <div style={{ padding:"9px 12px", borderRadius:8, background:mensaje.includes("Error")?"#FEF2F2":"#F0FDF4", color:mensaje.includes("Error")?"#B91C1C":"#15803D", fontSize:12, marginBottom:16, textAlign:"center" }}>{mensaje}</div>}
+      {mensaje && <div style={{ padding:"11px 16px", borderRadius:10, background:mensaje.includes("Error")?"#FEF2F2":"#F0FDF4", color:mensaje.includes("Error")?"#B91C1C":"#15803D", fontSize:12, marginBottom:20, fontWeight:500 }}>{mensaje}</div>}
+
       {esMariel && (
-        <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20, marginBottom:20 }}>
-          <div style={{ fontSize:15, fontFamily:"Georgia,serif", marginBottom:16 }}>Nueva solicitud</div>
-          <select value={nuevo.profesional_email} onChange={e => setNuevo({...nuevo, profesional_email: e.target.value})}
-            style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:"1px solid #E5E5E3", fontSize:13, marginBottom:10, outline:"none", background:"#fff" }}>
-            <option value="">Seleccionar profesional...</option>
-            {EMAILS_PROFESIONALES.map(e => (
-              <option key={e} value={e}>{PROFESIONALES[e]?.nombre}</option>
-            ))}
-          </select>
-          <input value={nuevo.documento} onChange={e => setNuevo({...nuevo, documento: e.target.value})} placeholder="Nombre del documento solicitado"
-            style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:"1px solid #E5E5E3", fontSize:13, marginBottom:10, outline:"none", boxSizing:"border-box" as const }} />
-          <input value={nuevo.descripcion} onChange={e => setNuevo({...nuevo, descripcion: e.target.value})} placeholder="Descripcion adicional (opcional)"
-            style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:"1px solid #E5E5E3", fontSize:13, marginBottom:12, outline:"none", boxSizing:"border-box" as const }} />
-          <button onClick={crear} style={{ padding:"9px 20px", borderRadius:8, border:"none", background:colorBtn, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer" }}>
+        <div style={{ ...S.card, marginBottom:20 }}>
+          <div style={{ fontSize:16, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:20 }}>Nueva solicitud</div>
+          <div style={{ marginBottom:12 }}>
+            <label style={S.label}>Profesional</label>
+            <select value={nuevo.profesional_email} onChange={e => setNuevo({...nuevo, profesional_email: e.target.value})} style={{ ...S.input }}>
+              <option value="">Seleccionar profesional...</option>
+              {EMAILS_PROFESIONALES.map(e => <option key={e} value={e}>{PROFESIONALES[e]?.nombre}</option>)}
+            </select>
+          </div>
+          <div style={{ marginBottom:12 }}>
+            <label style={S.label}>Documento solicitado</label>
+            <input value={nuevo.documento} onChange={e => setNuevo({...nuevo, documento: e.target.value})} placeholder="Nombre del documento" style={S.input} />
+          </div>
+          <div style={{ marginBottom:20 }}>
+            <label style={S.label}>Nota adicional (opcional)</label>
+            <input value={nuevo.descripcion} onChange={e => setNuevo({...nuevo, descripcion: e.target.value})} placeholder="Instrucciones o contexto" style={S.input} />
+          </div>
+          <button onClick={crear} style={{ padding:"11px 24px", borderRadius:10, border:"none", background:colorBtn, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer" }}>
             Enviar solicitud
           </button>
         </div>
       )}
-      <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
-        <div style={{ fontSize:15, fontFamily:"Georgia,serif", marginBottom:16 }}>{esMariel ? "Todas las solicitudes" : "Mis documentos solicitados"}</div>
-        {solicitudes.length === 0 && <div style={{ textAlign:"center", padding:"32px 0", color:"#999", fontSize:13 }}>No hay solicitudes aun</div>}
+
+      <div style={S.card}>
+        <div style={{ fontSize:16, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:20 }}>{esMariel ? "Todas las solicitudes" : "Mis documentos solicitados"}</div>
+        {solicitudes.length === 0 && <div style={{ textAlign:"center", padding:"32px 0", color:"#A1A1AA", fontSize:13 }}>No hay solicitudes registradas</div>}
         {solicitudes.map((sol, i) => (
-          <div key={i} style={{ padding:"12px 0", borderBottom: i < solicitudes.length-1 ? "1px solid #F0F0EE" : "none" }}>
+          <div key={i} style={{ padding:"14px 0", borderBottom: i < solicitudes.length-1 ? "1px solid #F4F4F2" : "none" }}>
             <div style={{ display:"flex", alignItems:"flex-start", gap:12 }}>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:13, fontWeight:600, color:"#18181B" }}>{sol.documento}</div>
-                {sol.descripcion && <div style={{ fontSize:11, color:"#999", marginTop:2 }}>{sol.descripcion}</div>}
-                {esMariel && <div style={{ fontSize:11, color:"#A1A1AA", marginTop:2 }}>{PROFESIONALES[sol.profesional_email]?.nombre || sol.profesional_email}</div>}
+                {sol.descripcion && <div style={{ fontSize:11, color:"#71717A", marginTop:3 }}>{sol.descripcion}</div>}
+                {esMariel && <div style={{ fontSize:11, color:"#C9A84C", marginTop:3, fontWeight:500 }}>{PROFESIONALES[sol.profesional_email]?.nombre}</div>}
               </div>
-              <span style={{ padding:"3px 10px", borderRadius:99, fontSize:10, fontWeight:600, flexShrink:0, background:sol.estado==="entregado"?"#F0FDF4":"#FFFBEB", color:sol.estado==="entregado"?"#15803D":"#B45309" }}>
-                {sol.estado==="entregado" ? "Entregado" : "Pendiente"}
-              </span>
+              <Chip label={sol.estado==="entregado"?"Entregado":"Pendiente"} color={sol.estado==="entregado"?"#15803D":"#B45309"} bg={sol.estado==="entregado"?"#F0FDF4":"#FFFBEB"} />
             </div>
             {!esMariel && sol.estado === "pendiente" && (
-              <div style={{ marginTop:8 }}>
-                <input ref={solSeleccionada === sol.id ? fileRef : undefined} type="file" style={{ display:"none" }}
+              <div style={{ marginTop:10 }}>
+                <input ref={solSel === sol.id ? fileRef : undefined} type="file" style={{ display:"none" }}
                   onChange={e => e.target.files && subirArchivo(sol, e.target.files[0])} />
-                <button onClick={() => { setSolSeleccionada(sol.id); setTimeout(() => fileRef.current?.click(), 100); }}
+                <button onClick={() => { setSolSel(sol.id); setTimeout(() => fileRef.current?.click(), 100); }}
                   disabled={subiendo === sol.id}
-                  style={{ padding:"6px 14px", borderRadius:7, border:"none", background:colorBtn, color:"#fff", fontSize:12, cursor:"pointer" }}>
+                  style={{ padding:"8px 18px", borderRadius:8, border:"none", background:colorBtn, color:"#fff", fontSize:12, cursor:"pointer", fontWeight:500 }}>
                   {subiendo === sol.id ? "Subiendo..." : "Subir documento"}
                 </button>
               </div>
             )}
-            {sol.archivo_url && <div style={{ marginTop:6 }}><a href={sol.archivo_url} target="_blank" rel="noreferrer" style={{ fontSize:12, color:colorBtn, textDecoration:"none" }}>Ver documento entregado</a></div>}
+            {sol.archivo_url && <a href={sol.archivo_url} target="_blank" rel="noreferrer" style={{ display:"inline-block", marginTop:8, fontSize:12, color:colorBtn, textDecoration:"none", fontWeight:500 }}>Ver documento entregado →</a>}
           </div>
         ))}
       </div>
@@ -336,53 +368,46 @@ function PanelMariel({ onVerPortal }: { onVerPortal: (email: string) => void }) 
   const [stats, setStats] = useState<Record<string, { solicitudes: number; vencidos: number }>>({});
 
   useEffect(() => {
-    const cargarStats = async () => {
+    const cargar = async () => {
       const { data: solic } = await sb.from("solicitudes").select("profesional_email, estado");
       const { data: venc } = await sb.from("vencimientos").select("profesional_email, fecha_vencimiento");
       const s: Record<string, { solicitudes: number; vencidos: number }> = {};
       EMAILS_PROFESIONALES.forEach(e => { s[e] = { solicitudes: 0, vencidos: 0 }; });
       (solic || []).forEach((sol: any) => { if (sol.estado === "pendiente" && s[sol.profesional_email]) s[sol.profesional_email].solicitudes++; });
-      (venc || []).forEach((v: any) => { if (getEstado(v.fecha_vencimiento).punto === "#B91C1C" && s[v.profesional_email]) s[v.profesional_email].vencidos++; });
+      (venc || []).forEach((v: any) => { if (getEstado(v.fecha_vencimiento).punto === "#EF4444" && s[v.profesional_email]) s[v.profesional_email].vencidos++; });
       setStats(s);
     };
-    cargarStats();
+    cargar();
   }, []);
 
   return (
-    <div style={{ flex:1, background:"#F8F8F7", padding:"28px 32px" }}>
-      <div style={{ fontSize:22, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:4 }}>Panel de Profesionales</div>
-      <div style={{ fontSize:12, color:"#999", marginBottom:24 }}>Haz clic en un profesional para ver su portal</div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:14 }}>
+    <div style={{ flex:1, background:"#F8F7F4", padding:"36px 40px", overflowY:"auto" as const }}>
+      <div style={{ marginBottom:32 }}>
+        <div style={{ fontSize:26, fontFamily:"Georgia,serif", color:"#18181B", fontWeight:400 }}>Mis Profesionales</div>
+        <div style={{ fontSize:13, color:"#A1A1AA", marginTop:4 }}>{EMAILS_PROFESIONALES.length} profesionales registrados</div>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(230px,1fr))", gap:16 }}>
         {EMAILS_PROFESIONALES.map(email => {
           const p = PROFESIONALES[email];
           const s = stats[email] || { solicitudes: 0, vencidos: 0 };
           return (
             <div key={email} onClick={() => onVerPortal(email)}
-              style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:12, overflow:"hidden", cursor:"pointer", transition:"box-shadow .15s" }}
-              onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,.1)")}
-              onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}>
-              <div style={{ background:p.p1, padding:"16px 16px 14px" }}>
-                <div style={{ width:40, height:40, borderRadius:10, background:p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.2)":p.p2+"30", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:10 }}>
-                  <div style={{ width:20, height:20, borderRadius:5, background:p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.6)":p.p2 }}></div>
+              style={{ background:"#fff", borderRadius:16, overflow:"hidden", cursor:"pointer", boxShadow:"0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04)", border:"1px solid rgba(0,0,0,.06)", transition:"all .2s" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,.12)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04)"; }}>
+              <div style={{ background:"linear-gradient(135deg, " + p.p1 + " 0%, " + p.p1 + "ee 100%)", padding:"20px 18px 16px", position:"relative" as const }}>
+                <div style={{ position:"absolute" as const, top:0, right:0, bottom:0, left:0, background:"radial-gradient(circle at 80% 20%, " + (p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.15)":p.p2+"25") + " 0%, transparent 60%)", borderRadius:"inherit" }}></div>
+                <div style={{ width:44, height:44, borderRadius:12, background:p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.2)":p.p2+"25", border:"1px solid " + (p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.3)":p.p2+"50"), display:"flex", alignItems:"center", justifyContent:"center", marginBottom:12, position:"relative" as const }}>
+                  <div style={{ width:22, height:22, borderRadius:6, background:p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.7)":p.p2, opacity:.9 }}></div>
                 </div>
-                <div style={{ fontSize:13, fontWeight:600, color:"#fff", lineHeight:1.3 }}>{p.nombre}</div>
-                <div style={{ fontSize:10, color:p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.7)":p.p2, marginTop:3, textTransform:"uppercase" as const, letterSpacing:".05em" }}>{p.esp}</div>
+                <div style={{ fontSize:13, fontWeight:600, color:"#fff", lineHeight:1.4, position:"relative" as const }}>{p.nombre}</div>
+                <div style={{ fontSize:10, color:p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.65)":p.p2, marginTop:3, textTransform:"uppercase" as const, letterSpacing:".06em", position:"relative" as const }}>{p.esp}</div>
               </div>
-              <div style={{ padding:"12px 16px", display:"flex", gap:12 }}>
-                {s.vencidos > 0 && (
-                  <span style={{ fontSize:10, color:"#B91C1C", background:"#FEF2F2", padding:"2px 8px", borderRadius:99, fontWeight:600 }}>
-                    {s.vencidos} vencido{s.vencidos > 1 ? "s" : ""}
-                  </span>
-                )}
-                {s.solicitudes > 0 && (
-                  <span style={{ fontSize:10, color:"#B45309", background:"#FFFBEB", padding:"2px 8px", borderRadius:99, fontWeight:600 }}>
-                    {s.solicitudes} pendiente{s.solicitudes > 1 ? "s" : ""}
-                  </span>
-                )}
-                {s.vencidos === 0 && s.solicitudes === 0 && (
-                  <span style={{ fontSize:10, color:"#15803D", background:"#F0FDF4", padding:"2px 8px", borderRadius:99, fontWeight:600 }}>Al dia</span>
-                )}
-                <span style={{ fontSize:10, color:"#999", marginLeft:"auto" }}>Ver portal →</span>
+              <div style={{ padding:"12px 18px", display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" as const }}>
+                {s.vencidos > 0 && <Chip label={s.vencidos + " vencido" + (s.vencidos>1?"s":"")} color="#B91C1C" bg="#FEF2F2" />}
+                {s.solicitudes > 0 && <Chip label={s.solicitudes + " pendiente" + (s.solicitudes>1?"s":"")} color="#B45309" bg="#FFFBEB" />}
+                {s.vencidos === 0 && s.solicitudes === 0 && <Chip label="Al dia" color="#15803D" bg="#F0FDF4" />}
+                <span style={{ fontSize:11, color:"#A1A1AA", marginLeft:"auto", fontWeight:500 }}>Ver →</span>
               </div>
             </div>
           );
@@ -415,155 +440,184 @@ export default function App() {
   const prof = PROFESIONALES[emailActivo] ?? { nombre: emailActivo, esp: "Portal", ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" };
 
   if (!user) return (
-    <div style={{ minHeight:"100vh", background:"#1A1A18", display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <div style={{ background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.1)", borderRadius:16, padding:40, width:380 }}>
-        <div style={{ textAlign:"center", marginBottom:28 }}>
-          <div style={{ width:52, height:52, borderRadius:12, background:"#C9A84C", display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, fontWeight:700, color:"#1A1A18", margin:"0 auto 14px" }}>P</div>
-          <div style={{ fontSize:20, color:"#fff", fontFamily:"Georgia,serif" }}>Portal de Habilitacion</div>
-          <div style={{ fontSize:11, color:"#C9A84C", marginTop:4, letterSpacing:".08em" }}>MARIEL GRAJALES - HABILITADORA</div>
+    <div style={{ minHeight:"100vh", background:"linear-gradient(135deg, #1A1A18 0%, #2A2A20 100%)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
+      <div style={{ background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.08)", borderRadius:24, padding:"44px 40px", width:"100%", maxWidth:400, boxShadow:"0 20px 60px rgba(0,0,0,.4)", backdropFilter:"blur(20px)" }}>
+        <div style={{ textAlign:"center", marginBottom:36 }}>
+          <div style={{ width:60, height:60, borderRadius:16, background:"linear-gradient(135deg, #C9A84C, #E8D080)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", boxShadow:"0 8px 24px rgba(201,168,76,.3)" }}>
+            <div style={{ width:28, height:28, borderRadius:8, background:"rgba(26,26,24,.4)" }}></div>
+          </div>
+          <div style={{ fontSize:22, color:"#fff", fontFamily:"Georgia,serif", fontWeight:400, letterSpacing:"-.01em" }}>Portal de Habilitacion</div>
+          <div style={{ fontSize:11, color:"#C9A84C", marginTop:6, letterSpacing:".12em", textTransform:"uppercase" as const }}>Mariel Grajales · Habilitadora</div>
         </div>
-        {err && <div style={{ background:"rgba(239,68,68,.15)", border:"1px solid rgba(239,68,68,.3)", borderRadius:8, padding:"9px 12px", fontSize:12, color:"#fca5a5", marginBottom:14, textAlign:"center" }}>{err}</div>}
-        <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Correo electronico"
-          style={{ width:"100%", padding:"10px 13px", borderRadius:8, border:"1px solid rgba(255,255,255,.12)", background:"rgba(255,255,255,.07)", color:"#fff", fontSize:13, marginBottom:10, outline:"none", boxSizing:"border-box" as const }} />
-        <input type="password" value={pass} onChange={e => setPass(e.target.value)} onKeyDown={e => e.key === "Enter" && login()} placeholder="Contrasena"
-          style={{ width:"100%", padding:"10px 13px", borderRadius:8, border:"1px solid rgba(255,255,255,.12)", background:"rgba(255,255,255,.07)", color:"#fff", fontSize:13, marginBottom:16, outline:"none", boxSizing:"border-box" as const }} />
+
+        {err && (
+          <div style={{ background:"rgba(239,68,68,.12)", border:"1px solid rgba(239,68,68,.25)", borderRadius:10, padding:"10px 14px", fontSize:12, color:"#FCA5A5", marginBottom:18, textAlign:"center" }}>
+            {err}
+          </div>
+        )}
+
+        <div style={{ marginBottom:12 }}>
+          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Correo electronico"
+            style={{ width:"100%", padding:"13px 16px", borderRadius:12, border:"1px solid rgba(255,255,255,.1)", background:"rgba(255,255,255,.06)", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box" as const, fontFamily:"inherit", letterSpacing:".01em" }} />
+        </div>
+        <div style={{ marginBottom:24 }}>
+          <input type="password" value={pass} onChange={e => setPass(e.target.value)} onKeyDown={e => e.key === "Enter" && login()} placeholder="Contrasena"
+            style={{ width:"100%", padding:"13px 16px", borderRadius:12, border:"1px solid rgba(255,255,255,.1)", background:"rgba(255,255,255,.06)", color:"#fff", fontSize:13, outline:"none", boxSizing:"border-box" as const, fontFamily:"inherit" }} />
+        </div>
         <button onClick={login} disabled={loading}
-          style={{ width:"100%", padding:11, borderRadius:8, border:"none", background:"#C9A84C", color:"#1A1A18", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+          style={{ width:"100%", padding:14, borderRadius:12, border:"none", background:loading?"rgba(201,168,76,.4)":"linear-gradient(135deg, #C9A84C, #B8962E)", color:"#1A1A18", fontSize:13, fontWeight:700, cursor:"pointer", letterSpacing:".03em", boxShadow:loading?"none":"0 4px 16px rgba(201,168,76,.3)" }}>
           {loading ? "Ingresando..." : "Ingresar al portal"}
         </button>
+        <div style={{ fontSize:11, color:"rgba(255,255,255,.2)", marginTop:20, textAlign:"center", letterSpacing:".04em" }}>
+          ACCESO PRIVADO · SOLO USUARIOS AUTORIZADOS
+        </div>
       </div>
     </div>
   );
 
   const menuMariel = [
-    { id:"panel",         label:"Mis Profesionales" },
-    { id:"solicitados",   label:"Solicitados" },
-    { id:"vencimientos",  label:"Vencimientos" },
+    { id:"panel", label:"Mis Profesionales" },
+    { id:"solicitados", label:"Solicitados" },
+    { id:"vencimientos", label:"Vencimientos" },
   ];
 
   const menuProf = [
-    { id:"inicio",        label:"Inicio" },
-    { id:"prestador",     label:"Datos del Prestador" },
-    { id:"expediente",    label:"Expediente" },
-    { id:"inst",          label:"Doc. Institucional" },
-    { id:"evidencias",    label:"Evidencias" },
-    { id:"actas",         label:"Actas" },
-    { id:"solicitados",   label:"Solicitados" },
-    { id:"vencimientos",  label:"Vencimientos" },
-    { id:"visita",        label:"Modo Visita" },
+    { id:"inicio", label:"Inicio" },
+    { id:"prestador", label:"Datos del Prestador" },
+    { id:"expediente", label:"Expediente" },
+    { id:"inst", label:"Doc. Institucional" },
+    { id:"evidencias", label:"Evidencias" },
+    { id:"actas", label:"Actas" },
+    { id:"solicitados", label:"Solicitados" },
+    { id:"vencimientos", label:"Vencimientos" },
+    { id:"visita", label:"Modo Visita" },
   ];
 
   if (esMariel && !portalViendo) {
     return (
-      <div style={{ display:"flex", minHeight:"100vh", fontFamily:"Arial,sans-serif" }}>
-        <div style={{ width:220, background:"#1A1A18", flexShrink:0, display:"flex", flexDirection:"column" }}>
-          <div style={{ padding:"20px 16px", borderBottom:"1px solid rgba(255,255,255,.1)" }}>
-            <div style={{ fontSize:14, color:"#fff", fontWeight:600 }}>Mariel Grajales</div>
-            <div style={{ fontSize:10, color:"#C9A84C", marginTop:3, textTransform:"uppercase" as const }}>Habilitadora</div>
+      <div style={{ display:"flex", minHeight:"100vh", fontFamily:"'Segoe UI', Arial, sans-serif" }}>
+        <div style={{ width:240, background:"#1A1A18", flexShrink:0, display:"flex", flexDirection:"column", boxShadow:"2px 0 12px rgba(0,0,0,.15)" }}>
+          <div style={{ padding:"28px 20px 20px" }}>
+            <div style={{ width:44, height:44, borderRadius:12, background:"linear-gradient(135deg, #C9A84C, #E8D080)", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <div style={{ width:20, height:20, borderRadius:6, background:"rgba(26,26,24,.4)" }}></div>
+            </div>
+            <div style={{ fontSize:15, color:"#fff", fontWeight:600, lineHeight:1.3 }}>Mariel Grajales</div>
+            <div style={{ fontSize:10, color:"#C9A84C", marginTop:3, textTransform:"uppercase" as const, letterSpacing:".08em" }}>Habilitadora</div>
           </div>
-          <div style={{ padding:"10px 8px", flex:1 }}>
+          <div style={{ height:1, background:"rgba(255,255,255,.06)", margin:"0 20px" }}></div>
+          <div style={{ padding:"16px 12px", flex:1 }}>
             {menuMariel.map(m => (
               <button key={m.id} onClick={() => setTab(m.id)}
-                style={{ display:"block", width:"100%", textAlign:"left" as const, padding:"9px 11px", borderRadius:7, marginBottom:2, border:"none", cursor:"pointer", background:tab===m.id?"rgba(201,168,76,.25)":"transparent", color:tab===m.id?"#C9A84C":"rgba(255,255,255,.7)", fontSize:13, fontWeight:tab===m.id?600:400 }}>
+                style={{ display:"block", width:"100%", textAlign:"left" as const, padding:"10px 12px", borderRadius:9, marginBottom:3, border:"none", cursor:"pointer", background:tab===m.id?"rgba(201,168,76,.18)":"transparent", color:tab===m.id?"#C9A84C":"rgba(255,255,255,.6)", fontSize:13, fontWeight:tab===m.id?600:400, letterSpacing:tab===m.id?".01em":"0", transition:"all .15s" }}>
                 {m.label}
               </button>
             ))}
           </div>
-          <div style={{ padding:"12px 10px", borderTop:"1px solid rgba(255,255,255,.1)" }}>
+          <div style={{ height:1, background:"rgba(255,255,255,.06)", margin:"0 20px" }}></div>
+          <div style={{ padding:"16px 12px 20px" }}>
             <button onClick={() => { sb.auth.signOut(); setUser(null); }}
-              style={{ width:"100%", padding:"7px", border:"1px solid rgba(255,255,255,.2)", background:"transparent", color:"rgba(255,255,255,.6)", borderRadius:7, cursor:"pointer", fontSize:12 }}>
+              style={{ width:"100%", padding:"9px", border:"1px solid rgba(255,255,255,.12)", background:"transparent", color:"rgba(255,255,255,.45)", borderRadius:9, cursor:"pointer", fontSize:12, fontFamily:"inherit", transition:"all .15s" }}>
               Cerrar sesion
             </button>
           </div>
         </div>
-        {tab === "panel" && <PanelMariel onVerPortal={email => { setPortalViendo(email); setTab("inicio"); }} />}
-        {tab === "solicitados" && <div style={{ flex:1, padding:"28px 32px", background:"#F8F8F7" }}><SeccionSolicitados email={user.email} p2="#C9A84C" esMariel={true} /></div>}
-        {tab === "vencimientos" && <div style={{ flex:1, padding:"28px 32px", background:"#F8F8F7" }}><SeccionVencimientos email={user.email} p2="#C9A84C" esMariel={true} /></div>}
+        {tab === "panel" && <PanelMariel onVerPortal={e => { setPortalViendo(e); setTab("inicio"); }} />}
+        {tab === "solicitados" && <div style={{ flex:1, padding:"36px 40px", background:"#F8F7F4", overflowY:"auto" as const }}><SeccionSolicitados email={user.email} p2="#C9A84C" esMariel={true} /></div>}
+        {tab === "vencimientos" && <div style={{ flex:1, padding:"36px 40px", background:"#F8F7F4", overflowY:"auto" as const }}><SeccionVencimientos email={user.email} p2="#C9A84C" esMariel={true} /></div>}
       </div>
     );
   }
 
   return (
-    <div style={{ display:"flex", minHeight:"100vh", fontFamily:"Arial,sans-serif" }}>
-      <div style={{ width:220, background:prof.p1, flexShrink:0, display:"flex", flexDirection:"column" }}>
-        <div style={{ padding:"20px 16px", borderBottom:"1px solid rgba(255,255,255,.1)" }}>
+    <div style={{ display:"flex", minHeight:"100vh", fontFamily:"'Segoe UI', Arial, sans-serif" }}>
+      <div style={{ width:240, background:prof.p1, flexShrink:0, display:"flex", flexDirection:"column", boxShadow:"2px 0 12px rgba(0,0,0,.15)" }}>
+        <div style={{ padding:"28px 20px 20px" }}>
           {portalViendo && (
             <button onClick={() => { setPortalViendo(null); setTab("panel"); }}
-              style={{ background:"rgba(255,255,255,.1)", border:"none", color:"rgba(255,255,255,.7)", padding:"4px 10px", borderRadius:6, fontSize:11, cursor:"pointer", marginBottom:10, width:"100%" }}>
+              style={{ width:"100%", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.1)", color:"rgba(255,255,255,.65)", padding:"7px 10px", borderRadius:8, fontSize:11, cursor:"pointer", marginBottom:14, fontFamily:"inherit", letterSpacing:".02em" }}>
               Volver al panel
             </button>
           )}
+          <div style={{ width:44, height:44, borderRadius:12, background:prof.p2==="white"||prof.p2==="#FFFFFF"?"rgba(255,255,255,.15)":prof.p2+"25", border:"1px solid " + (prof.p2==="white"||prof.p2==="#FFFFFF"?"rgba(255,255,255,.2)":prof.p2+"40"), marginBottom:14, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ width:20, height:20, borderRadius:6, background:prof.p2==="white"||prof.p2==="#FFFFFF"?"rgba(255,255,255,.6)":prof.p2, opacity:.8 }}></div>
+          </div>
           <div style={{ fontSize:14, color:"#fff", fontWeight:600, lineHeight:1.4 }}>{prof.nombre}</div>
-          <div style={{ fontSize:10, color:prof.p2, marginTop:3, textTransform:"uppercase" as const, letterSpacing:".06em" }}>{prof.esp}</div>
-          <div style={{ fontSize:10, color:"rgba(255,255,255,.4)", marginTop:2 }}>{prof.ciudad}</div>
+          <div style={{ fontSize:10, color:prof.p2==="white"||prof.p2==="#FFFFFF"?"rgba(255,255,255,.6)":prof.p2, marginTop:3, textTransform:"uppercase" as const, letterSpacing:".08em" }}>{prof.esp}</div>
+          <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginTop:2 }}>{prof.ciudad}</div>
         </div>
-        <div style={{ padding:"10px 8px", flex:1 }}>
+        <div style={{ height:1, background:"rgba(255,255,255,.06)", margin:"0 20px" }}></div>
+        <div style={{ padding:"16px 12px", flex:1 }}>
           {menuProf.map(m => (
             <button key={m.id} onClick={() => setTab(m.id)}
-              style={{ display:"block", width:"100%", textAlign:"left" as const, padding:"9px 11px", borderRadius:7, marginBottom:2, border:"none", cursor:"pointer", background:tab===m.id?prof.p2+"30":"transparent", color:tab===m.id?prof.p2:"rgba(255,255,255,.7)", fontSize:13, fontWeight:tab===m.id?600:400 }}>
+              style={{ display:"block", width:"100%", textAlign:"left" as const, padding:"10px 12px", borderRadius:9, marginBottom:3, border:"none", cursor:"pointer", background:tab===m.id?(prof.p2==="white"||prof.p2==="#FFFFFF"?"rgba(255,255,255,.12)":prof.p2+"22"):"transparent", color:tab===m.id?(prof.p2==="white"||prof.p2==="#FFFFFF"?"#fff":prof.p2):"rgba(255,255,255,.55)", fontSize:13, fontWeight:tab===m.id?600:400, transition:"all .15s" }}>
               {m.label}
             </button>
           ))}
         </div>
-        <div style={{ padding:"12px 10px", borderTop:"1px solid rgba(255,255,255,.1)" }}>
-          <div style={{ fontSize:10, color:"rgba(255,255,255,.4)", marginBottom:8 }}>Habilitadora - Mariel Grajales</div>
+        <div style={{ height:1, background:"rgba(255,255,255,.06)", margin:"0 20px" }}></div>
+        <div style={{ padding:"16px 12px 20px" }}>
+          <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginBottom:10, letterSpacing:".04em" }}>HABILITADORA</div>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,.5)", marginBottom:12 }}>Mariel Grajales</div>
           <button onClick={() => { sb.auth.signOut(); setUser(null); }}
-            style={{ width:"100%", padding:"7px", border:"1px solid rgba(255,255,255,.2)", background:"transparent", color:"rgba(255,255,255,.6)", borderRadius:7, cursor:"pointer", fontSize:12 }}>
+            style={{ width:"100%", padding:"9px", border:"1px solid rgba(255,255,255,.12)", background:"transparent", color:"rgba(255,255,255,.45)", borderRadius:9, cursor:"pointer", fontSize:12, fontFamily:"inherit" }}>
             Cerrar sesion
           </button>
         </div>
       </div>
 
-      <div style={{ flex:1, background:"#F8F8F7", padding:"28px 32px" }}>
-        <div style={{ fontSize:22, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:4 }}>
-          {menuProf.find(m => m.id===tab)?.label}
+      <div style={{ flex:1, background:"#F8F7F4", overflowY:"auto" as const }}>
+        <div style={{ padding:"36px 40px" }}>
+          <div style={{ marginBottom:28 }}>
+            <div style={{ fontSize:26, fontFamily:"Georgia,serif", color:"#18181B", fontWeight:400 }}>{menuProf.find(m => m.id===tab)?.label}</div>
+            <div style={{ fontSize:12, color:"#A1A1AA", marginTop:4 }}>Portal de Habilitacion · {prof.nombre}</div>
+          </div>
+
+          {tab==="inicio" && (
+            <div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:24 }}>
+                {[{n:"0",label:"Docs vigentes",c:"#22C55E",bg:"#F0FDF4"},{n:"0",label:"Por vencer",c:"#F59E0B",bg:"#FFFBEB"},{n:"0",label:"Vencidos",c:"#EF4444",bg:"#FEF2F2"},{n:"0",label:"Pendientes",c:prof.p2==="#FFFFFF"?"#C9A84C":prof.p2,bg:"#FAFAF9"}].map((c,i) => (
+                  <div key={i} style={{ ...S.card, padding:22 }}>
+                    <div style={{ fontSize:38, fontFamily:"Georgia,serif", color:c.c, lineHeight:1 }}>{c.n}</div>
+                    <div style={{ fontSize:11, color:"#71717A", marginTop:8, fontWeight:500, letterSpacing:".02em" }}>{c.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ ...S.card }}>
+                <div style={{ fontSize:18, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:10 }}>Bienvenida, {prof.nombre.split(" ").slice(0,3).join(" ")}</div>
+                <p style={{ fontSize:13, color:"#71717A", lineHeight:1.8, margin:0 }}>Tu expediente digital de habilitacion esta listo. Navega entre las secciones del menu para gestionar tus documentos.</p>
+              </div>
+            </div>
+          )}
+
+          {tab==="expediente" && <SeccionCarpetas carpetas={CARPETAS_EXPEDIENTE} seccion="expediente" email={emailActivo} p2={prof.p2} />}
+          {tab==="inst" && <SeccionCarpetas carpetas={CARPETAS_INSTITUCIONAL} seccion="institucional" email={emailActivo} p2={prof.p2} />}
+          {tab==="evidencias" && <SeccionCarpetas carpetas={["Fotos","Videos","Otros"]} seccion="evidencias" email={emailActivo} p2={prof.p2} />}
+          {tab==="actas" && <SeccionCarpetas carpetas={["Capacitacion","Comites","Reuniones","Auditorias","Seguimientos"]} seccion="actas" email={emailActivo} p2={prof.p2} />}
+          {tab==="solicitados" && <SeccionSolicitados email={emailActivo} p2={prof.p2} esMariel={esMariel && !portalViendo} />}
+          {tab==="vencimientos" && <SeccionVencimientos email={emailActivo} p2={prof.p2} esMariel={esMariel && !portalViendo} />}
+
+          {tab==="prestador" && (
+            <div style={S.card}>
+              <div style={{ fontSize:18, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:24 }}>Informacion del Prestador</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:24 }}>
+                {[["Nombre completo",prof.nombre],["Especialidad",prof.esp],["Ciudad",prof.ciudad],["Responsable de Habilitacion","Mariel Grajales"]].map(([k,v]) => (
+                  <div key={k} style={{ padding:"16px 0", borderBottom:"1px solid #F4F4F2" }}>
+                    <div style={S.label}>{k}</div>
+                    <div style={{ fontSize:14, color:"#18181B", fontWeight:500 }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab==="visita" && (
+            <div style={{ ...S.card, textAlign:"center", padding:60 }}>
+              <div style={{ width:64, height:64, borderRadius:16, background:"#F4F4F2", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", fontSize:28 }}>🏠</div>
+              <div style={{ fontSize:20, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:10 }}>Modo Visita</div>
+              <p style={{ fontSize:13, color:"#71717A", maxWidth:360, margin:"0 auto", lineHeight:1.7 }}>Vista simplificada para visitas de entes de control. Esta seccion estara disponible proximamente.</p>
+            </div>
+          )}
         </div>
-        <div style={{ fontSize:12, color:"#999", marginBottom:24 }}>Portal de Habilitacion - {prof.nombre}</div>
-
-        {tab==="inicio" && (
-          <div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:20 }}>
-              {[{n:"0",label:"Docs vigentes",c:"#15803D"},{n:"0",label:"Por vencer",c:"#B45309"},{n:"0",label:"Vencidos",c:"#B91C1C"},{n:"0",label:"Pendientes",c:prof.p2==="#FFFFFF"?"#C9A84C":prof.p2}].map((c,i) => (
-                <div key={i} style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:18 }}>
-                  <div style={{ fontSize:32, fontFamily:"Georgia,serif", color:c.c }}>{c.n}</div>
-                  <div style={{ fontSize:11, color:"#999", marginTop:4 }}>{c.label}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
-              <div style={{ fontSize:17, fontFamily:"Georgia,serif", marginBottom:8 }}>Bienvenida, {prof.nombre.split(" ").slice(0,3).join(" ")}</div>
-              <p style={{ fontSize:13, color:"#666", lineHeight:1.7 }}>Tu expediente digital de habilitacion esta listo. Usa el menu izquierdo para navegar.</p>
-            </div>
-          </div>
-        )}
-
-        {tab==="expediente" && <SeccionCarpetas carpetas={CARPETAS_EXPEDIENTE} seccion="expediente" email={emailActivo} p2={prof.p2} />}
-        {tab==="inst" && <SeccionCarpetas carpetas={CARPETAS_INSTITUCIONAL} seccion="institucional" email={emailActivo} p2={prof.p2} />}
-        {tab==="evidencias" && <SeccionCarpetas carpetas={["Fotos","Videos","Otros"]} seccion="evidencias" email={emailActivo} p2={prof.p2} />}
-        {tab==="actas" && <SeccionCarpetas carpetas={["Capacitacion","Comites","Reuniones","Auditorias","Seguimientos"]} seccion="actas" email={emailActivo} p2={prof.p2} />}
-        {tab==="solicitados" && <SeccionSolicitados email={emailActivo} p2={prof.p2} esMariel={esMariel && !portalViendo} />}
-        {tab==="vencimientos" && <SeccionVencimientos email={emailActivo} p2={prof.p2} esMariel={esMariel && !portalViendo} />}
-
-        {tab==="prestador" && (
-          <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:24 }}>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
-              {[["Nombre",prof.nombre],["Especialidad",prof.esp],["Ciudad",prof.ciudad],["Responsable","Mariel Grajales"]].map(([k,v]) => (
-                <div key={k}>
-                  <div style={{ fontSize:10, textTransform:"uppercase" as const, letterSpacing:".07em", color:"#999", marginBottom:4 }}>{k}</div>
-                  <div style={{ fontSize:13, color:"#18181B" }}>{v}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {tab==="visita" && (
-          <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:40, textAlign:"center" }}>
-            <div style={{ fontSize:36, marginBottom:12 }}>🏠</div>
-            <div style={{ fontSize:17, fontFamily:"Georgia,serif", marginBottom:8 }}>Modo Visita</div>
-            <p style={{ fontSize:13, color:"#666" }}>Vista simplificada para visitas de control. Disponible proximamente.</p>
-          </div>
-        )}
       </div>
     </div>
   );
