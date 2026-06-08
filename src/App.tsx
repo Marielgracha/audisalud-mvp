@@ -8,48 +8,49 @@ const sb = createClient(
 
 const PROFESIONALES: Record<string, { nombre: string; esp: string; ciudad: string; p1: string; p2: string }> = {
   "marielgracha02@gmail.com":      { nombre: "Mariel Grajales",               esp: "Habilitadora",                         ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
-  "pilar.villegas@portal.co":      { nombre: "Dra. María del Pilar Villegas", esp: "Dermatología",                         ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
-  "cesar.grajales@portal.co":      { nombre: "Dr. César Grajales",            esp: "Ginecología y Obstetricia",            ciudad: "Pereira", p1: "#1A3A5C", p2: "#5BA4CF" },
-  "maida.agudelo@portal.co":       { nombre: "Dra. Maida Agudelo",            esp: "Otorrinolaringología",                 ciudad: "Pereira", p1: "#1A4A3A", p2: "#5EC4A8" },
-  "fredy.ortiz@portal.co":         { nombre: "Dr. Fredy Ortiz",               esp: "Cirugía Plástica",                     ciudad: "Pereira", p1: "#2A2A2A", p2: "#C8C8C8" },
-  "laura.canon@portal.co":         { nombre: "Dra. Laura Cañón",              esp: "Psiquiatría Infancia y Adolescencia",  ciudad: "Pereira", p1: "#1A2A4A", p2: "#7EC8C8" },
-  "mauricio.giraldo@portal.co":    { nombre: "Dr. Mauricio Giraldo",          esp: "Oftalmología",                         ciudad: "Pereira", p1: "#1A3A5C", p2: "#FFFFFF" },
-  "erika.caballero@portal.co":     { nombre: "Dra. Erika Caballero",          esp: "Otorrinolaringología",                 ciudad: "Pereira", p1: "#1A3A5C", p2: "#FFFFFF" },
-  "laura.duque@portal.co":         { nombre: "Dra. Laura Duque",              esp: "Otorrinolaringología",                 ciudad: "Pereira", p1: "#2A2A1A", p2: "#C9A84C" },
-  "sandra.gutierrez@portal.co":    { nombre: "Dra. Sandra Gutiérrez",         esp: "Ginecología",                          ciudad: "Pereira", p1: "#3A1A3A", p2: "#E8A0C8" },
-  "hernan.guerrero@portal.co":     { nombre: "Dr. Hernán Guerrero",           esp: "Urología",                             ciudad: "Pereira", p1: "#1A3A2A", p2: "#5EC4A8" },
-  "ricardo.pacheco@portal.co":     { nombre: "Dr. Ricardo Pacheco",           esp: "Cirugía Plástica",                     ciudad: "Pereira", p1: "#1A3A5C", p2: "#FFFFFF" },
-  "julian.castellanos@portal.co":  { nombre: "Dr. Julián Castellanos",        esp: "Cirugía Plástica",                     ciudad: "Pereira", p1: "#1A1A1A", p2: "#888888" },
-  "cristobal.ospina@portal.co":    { nombre: "Dr. Cristóbal Ospina",          esp: "Cirugía General",                      ciudad: "Pereira", p1: "#1A2A4A", p2: "#C9A84C" },
-  "adriana.paez@portal.co":        { nombre: "Dra. Adriana Páez",             esp: "Neurocirugía",                         ciudad: "Pereira", p1: "#2A1A3A", p2: "#B87EC8" },
-  "ivan.herrera@portal.co":        { nombre: "Dr. Iván Herrera",              esp: "Neurocirugía",                         ciudad: "Pereira", p1: "#1A3A5C", p2: "#FFFFFF" },
-  "lina.agudelo@portal.co":        { nombre: "Dra. Lina Agudelo",             esp: "Cirugía Plástica",                     ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
-  "alejandro.orozco@portal.co":    { nombre: "Dr. Alejandro Orozco",          esp: "Cirugía General",                      ciudad: "Pereira", p1: "#1A3A2A", p2: "#5BA4CF" },
+  "pilar.villegas@portal.co":      { nombre: "Dra. Maria del Pilar Villegas", esp: "Dermatologia",                         ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
+  "cesar.grajales@portal.co":      { nombre: "Dr. Cesar Grajales",            esp: "Ginecologia y Obstetricia",            ciudad: "Pereira", p1: "#1A3A5C", p2: "#5BA4CF" },
+  "maida.agudelo@portal.co":       { nombre: "Dra. Maida Agudelo",            esp: "Otorrinolaringologia",                 ciudad: "Pereira", p1: "#1A4A3A", p2: "#5EC4A8" },
+  "fredy.ortiz@portal.co":         { nombre: "Dr. Fredy Ortiz",               esp: "Cirugia Plastica",                     ciudad: "Pereira", p1: "#2A2A2A", p2: "#C8C8C8" },
+  "laura.canon@portal.co":         { nombre: "Dra. Laura Canon",              esp: "Psiquiatria Infancia y Adolescencia",  ciudad: "Pereira", p1: "#1A2A4A", p2: "#7EC8C8" },
+  "mauricio.giraldo@portal.co":    { nombre: "Dr. Mauricio Giraldo",          esp: "Oftalmologia",                         ciudad: "Pereira", p1: "#1A3A5C", p2: "#5BA4CF" },
+  "erika.caballero@portal.co":     { nombre: "Dra. Erika Caballero",          esp: "Otorrinolaringologia",                 ciudad: "Pereira", p1: "#1A3A5C", p2: "#5BA4CF" },
+  "laura.duque@portal.co":         { nombre: "Dra. Laura Duque",              esp: "Otorrinolaringologia",                 ciudad: "Pereira", p1: "#2A2A1A", p2: "#C9A84C" },
+  "sandra.gutierrez@portal.co":    { nombre: "Dra. Sandra Gutierrez",         esp: "Ginecologia",                          ciudad: "Pereira", p1: "#3A1A3A", p2: "#E8A0C8" },
+  "hernan.guerrero@portal.co":     { nombre: "Dr. Hernan Guerrero",           esp: "Urologia",                             ciudad: "Pereira", p1: "#1A3A2A", p2: "#5EC4A8" },
+  "ricardo.pacheco@portal.co":     { nombre: "Dr. Ricardo Pacheco",           esp: "Cirugia Plastica",                     ciudad: "Pereira", p1: "#1A3A5C", p2: "#5BA4CF" },
+  "julian.castellanos@portal.co":  { nombre: "Dr. Julian Castellanos",        esp: "Cirugia Plastica",                     ciudad: "Pereira", p1: "#1A1A1A", p2: "#888888" },
+  "cristobal.ospina@portal.co":    { nombre: "Dr. Cristobal Ospina",          esp: "Cirugia General",                      ciudad: "Pereira", p1: "#1A2A4A", p2: "#C9A84C" },
+  "adriana.paez@portal.co":        { nombre: "Dra. Adriana Paez",             esp: "Neurocirugia",                         ciudad: "Pereira", p1: "#2A1A3A", p2: "#B87EC8" },
+  "ivan.herrera@portal.co":        { nombre: "Dr. Ivan Herrera",              esp: "Neurocirugia",                         ciudad: "Pereira", p1: "#1A3A5C", p2: "#5BA4CF" },
+  "lina.agudelo@portal.co":        { nombre: "Dra. Lina Agudelo",             esp: "Cirugia Plastica",                     ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
+  "alejandro.orozco@portal.co":    { nombre: "Dr. Alejandro Orozco",          esp: "Cirugia General",                      ciudad: "Pereira", p1: "#1A3A2A", p2: "#5BA4CF" },
   "juanita.giraldo@portal.co":     { nombre: "Dra. Juanita Giraldo",          esp: "Medicina General",                     ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
-  "juliana.aguirre@portal.co":     { nombre: "Dra. Juliana Aguirre",          esp: "Cirugía Plástica",                     ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
-  "bernardo.vaca@portal.co":       { nombre: "Dr. Bernardo Vaca",             esp: "Ortopedia",                            ciudad: "Pereira", p1: "#1A3A5C", p2: "#FFFFFF" },
-  "aura.orozco@portal.co":         { nombre: "Dra. Aura Orozco",              esp: "Pediatría",                            ciudad: "Pereira", p1: "#2A3A2A", p2: "#A8D8A8" },
-  "clara.soto@portal.co":          { nombre: "Dra. Clara Soto",               esp: "Dermatología",                         ciudad: "Pereira", p1: "#D4B896", p2: "#FFFFFF" },
+  "juliana.aguirre@portal.co":     { nombre: "Dra. Juliana Aguirre",          esp: "Cirugia Plastica",                     ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
+  "bernardo.vaca@portal.co":       { nombre: "Dr. Bernardo Vaca",             esp: "Ortopedia",                            ciudad: "Pereira", p1: "#1A3A5C", p2: "#5BA4CF" },
+  "aura.orozco@portal.co":         { nombre: "Dra. Aura Orozco",              esp: "Pediatria",                            ciudad: "Pereira", p1: "#2A3A2A", p2: "#A8D8A8" },
+  "clara.soto@portal.co":          { nombre: "Dra. Clara Soto",               esp: "Dermatologia",                         ciudad: "Pereira", p1: "#D4B896", p2: "#FFFFFF" },
   "adriana.varela@portal.co":      { nombre: "Dra. Adriana Varela",           esp: "Medicina General",                     ciudad: "Pereira", p1: "#2A1A3A", p2: "#FFFFFF" },
-  "jessica.armijos@portal.co":     { nombre: "Dra. Jessica Armijos",          esp: "Genética",                             ciudad: "Pereira", p1: "#1A2A3A", p2: "#7EC8B8" },
-  "william.cardona@portal.com":    { nombre: "Dr. William Cardona",           esp: "Cirugía Plástica",                     ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
-  "gustavo.cajiao@portal.co":      { nombre: "Dr. Gustavo Cajiao",            esp: "Cirugía Vascular",                     ciudad: "Pereira", p1: "#1A3A5C", p2: "#FFFFFF" },
-  "zelectum.estetica@portal.co":   { nombre: "Zelectum Estética",             esp: "Estética Avanzada",                    ciudad: "Pereira", p1: "#2A2A1A", p2: "#C9A84C" },
+  "jessica.armijos@portal.co":     { nombre: "Dra. Jessica Armijos",          esp: "Genetica",                             ciudad: "Pereira", p1: "#1A2A3A", p2: "#7EC8B8" },
+  "william.cardona@portal.com":    { nombre: "Dr. William Cardona",           esp: "Cirugia Plastica",                     ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
+  "gustavo.cajiao@portal.co":      { nombre: "Dr. Gustavo Cajiao",            esp: "Cirugia Vascular",                     ciudad: "Pereira", p1: "#1A3A5C", p2: "#5BA4CF" },
+  "zelectum.estetica@portal.co":   { nombre: "Zelectum Estetica",             esp: "Estetica Avanzada",                    ciudad: "Pereira", p1: "#2A2A1A", p2: "#C9A84C" },
 };
 
-const CARPETAS = ["Talento Humano","Infraestructura","Dotación","Medicamentos","Procesos Prioritarios","Historia Clínica","Interdependencia"];
+const CARPETAS_EXPEDIENTE = ["Talento Humano","Infraestructura","Dotacion","Medicamentos","Procesos Prioritarios","Historia Clinica","Interdependencia"];
+const CARPETAS_INSTITUCIONAL = ["Seguridad del Paciente","PGIRASA","SST","Manuales","Procedimientos","Programas","Planes","Protocolos","Formatos"];
 
-function ModalSubir({ carpeta, email, p2, onClose }: { carpeta: string; email: string; p2: string; onClose: () => void }) {
+function ModalSubir({ carpeta, seccion, email, p2, onClose }: { carpeta: string; seccion: string; email: string; p2: string; onClose: () => void }) {
   const [archivo, setArchivo] = useState<File | null>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [docs, setDocs] = useState<any[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const carpetaPath = email + "/" + carpeta;
+  const rutaBase = email + "/" + seccion + "/" + carpeta;
 
   const cargarDocs = async () => {
-    const { data } = await sb.storage.from("documentos").list(carpetaPath);
+    const { data } = await sb.storage.from("documentos").list(rutaBase);
     setDocs(data || []);
   };
 
@@ -59,24 +60,24 @@ function ModalSubir({ carpeta, email, p2, onClose }: { carpeta: string; email: s
     if (!archivo) return;
     setSubiendo(true);
     setMensaje("");
-    const ruta = carpetaPath + "/" + Date.now() + "_" + archivo.name;
+    const ruta = rutaBase + "/" + Date.now() + "_" + archivo.name;
     const { error } = await sb.storage.from("documentos").upload(ruta, archivo);
-    if (error) setMensaje("Error al subir: " + error.message);
+    if (error) setMensaje("Error: " + error.message);
     else { setMensaje("Documento subido correctamente!"); setArchivo(null); cargarDocs(); }
     setSubiendo(false);
   };
 
   const eliminar = async (nombre: string) => {
-    const ruta = carpetaPath + "/" + nombre;
-    await sb.storage.from("documentos").remove([ruta]);
+    await sb.storage.from("documentos").remove([rutaBase + "/" + nombre]);
     cargarDocs();
   };
 
-  const verDoc = async (nombre: string) => {
-    const ruta = carpetaPath + "/" + nombre;
-    const { data } = await sb.storage.from("documentos").createSignedUrl(ruta, 3600);
+  const ver = async (nombre: string) => {
+    const { data } = await sb.storage.from("documentos").createSignedUrl(rutaBase + "/" + nombre, 3600);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
+
+  const colorBtn = p2 === "#FFFFFF" || p2 === "white" ? "#1A3A5C" : p2;
 
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:100 }}
@@ -85,22 +86,20 @@ function ModalSubir({ carpeta, email, p2, onClose }: { carpeta: string; email: s
         onClick={e => e.stopPropagation()}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
           <div style={{ fontSize:18, fontFamily:"Georgia,serif", color:"#18181B" }}>{carpeta}</div>
-          <button onClick={onClose} style={{ background:"none", border:"none", fontSize:20, cursor:"pointer", color:"#999" }}>x</button>
+          <button onClick={onClose} style={{ background:"none", border:"none", fontSize:22, cursor:"pointer", color:"#999" }}>x</button>
         </div>
         <div style={{ border:"2px dashed #E5E5E3", borderRadius:10, padding:24, textAlign:"center", marginBottom:16, cursor:"pointer", background:"#F8F8F7" }}
           onClick={() => fileRef.current?.click()}
           onDragOver={e => e.preventDefault()}
           onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) setArchivo(f); }}>
           <div style={{ fontSize:28, marginBottom:8 }}>📎</div>
-          <div style={{ fontSize:13, color:"#52525B", fontWeight:500 }}>
-            {archivo ? archivo.name : "Haz clic o arrastra un archivo aqui"}
-          </div>
-          <div style={{ fontSize:11, color:"#999", marginTop:4 }}>PDF - Word - Excel - JPG - PNG</div>
+          <div style={{ fontSize:13, color:"#52525B", fontWeight:500 }}>{archivo ? archivo.name : "Haz clic o arrastra un archivo aqui"}</div>
+          <div style={{ fontSize:11, color:"#999", marginTop:4 }}>PDF - Word - Excel - JPG - PNG - ZIP</div>
           <input ref={fileRef} type="file" style={{ display:"none" }} onChange={e => e.target.files && setArchivo(e.target.files[0])} />
         </div>
         {archivo && (
           <button onClick={subir} disabled={subiendo}
-            style={{ width:"100%", padding:11, borderRadius:8, border:"none", background:p2==="white"?"#1A3A5C":p2, color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", marginBottom:12 }}>
+            style={{ width:"100%", padding:11, borderRadius:8, border:"none", background:colorBtn, color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", marginBottom:12 }}>
             {subiendo ? "Subiendo..." : "Subir documento"}
           </button>
         )}
@@ -116,7 +115,7 @@ function ModalSubir({ carpeta, email, p2, onClose }: { carpeta: string; email: s
               <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderBottom:"1px solid #F0F0EE" }}>
                 <div style={{ fontSize:16 }}>📄</div>
                 <div style={{ flex:1, fontSize:12, color:"#18181B" }}>{doc.name.replace(/^\d+_/, "")}</div>
-                <button onClick={() => verDoc(doc.name)} style={{ padding:"4px 10px", borderRadius:6, border:"1px solid #E5E5E3", background:"transparent", cursor:"pointer", fontSize:11, color:"#555" }}>Ver</button>
+                <button onClick={() => ver(doc.name)} style={{ padding:"4px 10px", borderRadius:6, border:"1px solid #E5E5E3", background:"transparent", cursor:"pointer", fontSize:11, color:"#555" }}>Ver</button>
                 <button onClick={() => eliminar(doc.name)} style={{ padding:"4px 10px", borderRadius:6, border:"1px solid #FECACA", background:"transparent", cursor:"pointer", fontSize:11, color:"#B91C1C" }}>Eliminar</button>
               </div>
             ))}
@@ -130,6 +129,30 @@ function ModalSubir({ carpeta, email, p2, onClose }: { carpeta: string; email: s
   );
 }
 
+function SeccionCarpetas({ carpetas, seccion, email, p2 }: { carpetas: string[]; seccion: string; email: string; p2: string }) {
+  const [carpetaAbierta, setCarpetaAbierta] = useState<string | null>(null);
+  return (
+    <div>
+      {carpetaAbierta && (
+        <ModalSubir carpeta={carpetaAbierta} seccion={seccion} email={email} p2={p2} onClose={() => setCarpetaAbierta(null)} />
+      )}
+      <p style={{ fontSize:13, color:"#666", marginBottom:16 }}>Haz clic en una carpeta para ver y subir documentos.</p>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(170px,1fr))", gap:12 }}>
+        {carpetas.map((nombre, i) => (
+          <div key={i} onClick={() => setCarpetaAbierta(nombre)}
+            style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:18, cursor:"pointer" }}
+            onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,.1)")}
+            onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}>
+            <div style={{ fontSize:24, marginBottom:8 }}>📁</div>
+            <div style={{ fontSize:13, fontWeight:600, color:"#18181B" }}>{nombre}</div>
+            <div style={{ fontSize:11, color:"#999", marginTop:6 }}>Abrir carpeta</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
@@ -137,7 +160,6 @@ export default function App() {
   const [err, setErr] = useState("");
   const [user, setUser] = useState<any>(null);
   const [tab, setTab] = useState("inicio");
-  const [carpetaAbierta, setCarpetaAbierta] = useState<string | null>(null);
 
   const login = async () => {
     setLoading(true);
@@ -185,9 +207,6 @@ export default function App() {
 
   return (
     <div style={{ display:"flex", minHeight:"100vh", fontFamily:"Arial,sans-serif" }}>
-      {carpetaAbierta && (
-        <ModalSubir carpeta={carpetaAbierta} email={user.email} p2={prof!.p2} onClose={() => setCarpetaAbierta(null)} />
-      )}
       <div style={{ width:220, background:prof!.p1, flexShrink:0, display:"flex", flexDirection:"column" }}>
         <div style={{ padding:"20px 16px", borderBottom:"1px solid rgba(255,255,255,.1)" }}>
           <div style={{ fontSize:14, color:"#fff", fontWeight:600, lineHeight:1.4 }}>{prof!.nombre}</div>
@@ -210,6 +229,7 @@ export default function App() {
           </button>
         </div>
       </div>
+
       <div style={{ flex:1, background:"#F8F8F7", padding:"28px 32px" }}>
         <div style={{ fontSize:22, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:4 }}>
           {menu.find(m => m.id===tab)?.label}
@@ -219,7 +239,7 @@ export default function App() {
         {tab==="inicio" && (
           <div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:20 }}>
-              {[{n:"0",label:"Docs vigentes",c:"#15803D"},{n:"0",label:"Por vencer",c:"#B45309"},{n:"0",label:"Vencidos",c:"#B91C1C"},{n:"0",label:"Pendientes",c:prof!.p2}].map((c,i) => (
+              {[{n:"0",label:"Docs vigentes",c:"#15803D"},{n:"0",label:"Por vencer",c:"#B45309"},{n:"0",label:"Vencidos",c:"#B91C1C"},{n:"0",label:"Pendientes",c:prof!.p2==="white"?"#C9A84C":prof!.p2}].map((c,i) => (
                 <div key={i} style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:18 }}>
                   <div style={{ fontSize:32, fontFamily:"Georgia,serif", color:c.c }}>{c.n}</div>
                   <div style={{ fontSize:11, color:"#999", marginTop:4 }}>{c.label}</div>
@@ -227,28 +247,22 @@ export default function App() {
               ))}
             </div>
             <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
-              <div style={{ fontSize:17, fontFamily:"Georgia,serif", marginBottom:8 }}>Bienvenida</div>
-              <p style={{ fontSize:13, color:"#666", lineHeight:1.7 }}>Tu expediente digital esta listo. Haz clic en Expediente para empezar a subir documentos.</p>
+              <div style={{ fontSize:17, fontFamily:"Georgia,serif", marginBottom:8 }}>Bienvenida, {prof!.nombre.split(" ").slice(0,3).join(" ")}</div>
+              <p style={{ fontSize:13, color:"#666", lineHeight:1.7 }}>Tu expediente digital de habilitacion esta listo. Usa el menu izquierdo para navegar entre las secciones.</p>
             </div>
           </div>
         )}
 
         {tab==="expediente" && (
-          <div>
-            <p style={{ fontSize:13, color:"#666", marginBottom:16 }}>Haz clic en una carpeta para ver y subir documentos.</p>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(170px,1fr))", gap:12 }}>
-              {CARPETAS.map((nombre,i) => (
-                <div key={i} onClick={() => setCarpetaAbierta(nombre)}
-                  style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:18, cursor:"pointer" }}
-                  onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,.1)")}
-                  onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}>
-                  <div style={{ fontSize:24, marginBottom:8 }}>📁</div>
-                  <div style={{ fontSize:13, fontWeight:600, color:"#18181B" }}>{nombre}</div>
-                  <div style={{ fontSize:11, color:"#999", marginTop:6 }}>Abrir carpeta</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <SeccionCarpetas carpetas={CARPETAS_EXPEDIENTE} seccion="expediente" email={user.email} p2={prof!.p2} />
+        )}
+
+        {tab==="inst" && (
+          <SeccionCarpetas carpetas={CARPETAS_INSTITUCIONAL} seccion="institucional" email={user.email} p2={prof!.p2} />
+        )}
+
+        {tab==="evidencias" && (
+          <SeccionCarpetas carpetas={["Fotos","Videos","Otros"]} seccion="evidencias" email={user.email} p2={prof!.p2} />
         )}
 
         {tab==="vencimientos" && (
@@ -258,9 +272,7 @@ export default function App() {
         )}
 
         {tab==="actas" && (
-          <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
-            <div style={{ textAlign:"center", padding:"32px 0", color:"#999", fontSize:13 }}>No hay actas registradas aun.</div>
-          </div>
+          <SeccionCarpetas carpetas={["Capacitacion","Comites","Reuniones","Auditorias","Seguimientos"]} seccion="actas" email={user.email} p2={prof!.p2} />
         )}
 
         {tab==="solicitados" && (
@@ -282,11 +294,11 @@ export default function App() {
           </div>
         )}
 
-        {(tab==="inst" || tab==="evidencias" || tab==="visita") && (
+        {tab==="visita" && (
           <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:40, textAlign:"center" }}>
-            <div style={{ fontSize:36, marginBottom:12 }}>🚧</div>
-            <div style={{ fontSize:17, fontFamily:"Georgia,serif", marginBottom:8 }}>Seccion en construccion</div>
-            <p style={{ fontSize:13, color:"#666" }}>Disponible proximamente.</p>
+            <div style={{ fontSize:36, marginBottom:12 }}>🏠</div>
+            <div style={{ fontSize:17, fontFamily:"Georgia,serif", marginBottom:8 }}>Modo Visita</div>
+            <p style={{ fontSize:13, color:"#666" }}>Vista simplificada para visitas de control. Disponible proximamente.</p>
           </div>
         )}
       </div>
