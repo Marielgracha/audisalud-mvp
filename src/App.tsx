@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const sb = createClient(
@@ -39,6 +39,7 @@ const PROFESIONALES: Record<string, { nombre: string; esp: string; ciudad: strin
 
 const CARPETAS_EXPEDIENTE = ["Talento Humano","Infraestructura","Dotacion","Medicamentos","Procesos Prioritarios","Historia Clinica","Interdependencia"];
 const CARPETAS_INSTITUCIONAL = ["Seguridad del Paciente","PGIRASA","SST","Manuales","Procedimientos","Programas","Planes","Protocolos","Formatos"];
+const EMAILS_PROFESIONALES = Object.keys(PROFESIONALES).filter(e => e !== "marielgracha02@gmail.com");
 
 function ModalSubir({ carpeta, seccion, email, p2, onClose }: { carpeta: string; seccion: string; email: string; p2: string; onClose: () => void }) {
   const [archivo, setArchivo] = useState<File | null>(null);
@@ -46,7 +47,6 @@ function ModalSubir({ carpeta, seccion, email, p2, onClose }: { carpeta: string;
   const [mensaje, setMensaje] = useState("");
   const [docs, setDocs] = useState<any[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
-
   const rutaBase = email + "/" + seccion + "/" + carpeta;
 
   const cargarDocs = async () => {
@@ -54,7 +54,7 @@ function ModalSubir({ carpeta, seccion, email, p2, onClose }: { carpeta: string;
     setDocs(data || []);
   };
 
-  useState(() => { cargarDocs(); });
+  useEffect(() => { cargarDocs(); }, []);
 
   const subir = async () => {
     if (!archivo) return;
@@ -80,10 +80,8 @@ function ModalSubir({ carpeta, seccion, email, p2, onClose }: { carpeta: string;
   const colorBtn = p2 === "#FFFFFF" || p2 === "white" ? "#1A3A5C" : p2;
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:100 }}
-      onClick={onClose}>
-      <div style={{ background:"#fff", borderRadius:14, padding:28, width:500, maxHeight:"80vh", overflowY:"auto" as const }}
-        onClick={e => e.stopPropagation()}>
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:100 }} onClick={onClose}>
+      <div style={{ background:"#fff", borderRadius:14, padding:28, width:500, maxHeight:"80vh", overflowY:"auto" as const }} onClick={e => e.stopPropagation()}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
           <div style={{ fontSize:18, fontFamily:"Georgia,serif", color:"#18181B" }}>{carpeta}</div>
           <button onClick={onClose} style={{ background:"none", border:"none", fontSize:22, cursor:"pointer", color:"#999" }}>x</button>
@@ -133,9 +131,7 @@ function SeccionCarpetas({ carpetas, seccion, email, p2 }: { carpetas: string[];
   const [carpetaAbierta, setCarpetaAbierta] = useState<string | null>(null);
   return (
     <div>
-      {carpetaAbierta && (
-        <ModalSubir carpeta={carpetaAbierta} seccion={seccion} email={email} p2={p2} onClose={() => setCarpetaAbierta(null)} />
-      )}
+      {carpetaAbierta && <ModalSubir carpeta={carpetaAbierta} seccion={seccion} email={email} p2={p2} onClose={() => setCarpetaAbierta(null)} />}
       <p style={{ fontSize:13, color:"#666", marginBottom:16 }}>Haz clic en una carpeta para ver y subir documentos.</p>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(170px,1fr))", gap:12 }}>
         {carpetas.map((nombre, i) => (
@@ -146,6 +142,117 @@ function SeccionCarpetas({ carpetas, seccion, email, p2 }: { carpetas: string[];
             <div style={{ fontSize:24, marginBottom:8 }}>📁</div>
             <div style={{ fontSize:13, fontWeight:600, color:"#18181B" }}>{nombre}</div>
             <div style={{ fontSize:11, color:"#999", marginTop:6 }}>Abrir carpeta</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SeccionSolicitados({ email, p2, esMariel }: { email: string; p2: string; esMariel: boolean }) {
+  const [solicitudes, setSolicitudes] = useState<any[]>([]);
+  const [nuevo, setNuevo] = useState({ profesional_email: "", documento: "", descripcion: "" });
+  const [subiendo, setSubiendo] = useState<string | null>(null);
+  const [mensaje, setMensaje] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [solSeleccionada, setSolSeleccionada] = useState<string | null>(null);
+  const colorBtn = p2 === "#FFFFFF" || p2 === "white" ? "#1A3A5C" : p2;
+
+  const cargar = async () => {
+    let query = sb.from("solicitudes").select("*").order("created_at", { ascending: false });
+    if (!esMariel) query = query.eq("profesional_email", email);
+    const { data } = await query;
+    setSolicitudes(data || []);
+  };
+
+  useEffect(() => { cargar(); }, []);
+
+  const crear = async () => {
+    if (!nuevo.profesional_email || !nuevo.documento) { setMensaje("Completa el profesional y el documento"); return; }
+    const { error } = await sb.from("solicitudes").insert([nuevo]);
+    if (error) setMensaje("Error: " + error.message);
+    else { setMensaje("Solicitud enviada!"); setNuevo({ profesional_email: "", documento: "", descripcion: "" }); cargar(); }
+  };
+
+  const subirArchivo = async (sol: any, file: File) => {
+    setSubiendo(sol.id);
+    const ruta = email + "/solicitudes/" + sol.id + "_" + file.name;
+    const { error } = await sb.storage.from("documentos").upload(ruta, file);
+    if (!error) {
+      const { data } = await sb.storage.from("documentos").createSignedUrl(ruta, 31536000);
+      await sb.from("solicitudes").update({ estado: "entregado", archivo_url: data?.signedUrl }).eq("id", sol.id);
+      cargar();
+    }
+    setSubiendo(null);
+  };
+
+  return (
+    <div>
+      {mensaje && (
+        <div style={{ padding:"9px 12px", borderRadius:8, background:mensaje.includes("Error")?"#FEF2F2":"#F0FDF4", color:mensaje.includes("Error")?"#B91C1C":"#15803D", fontSize:12, marginBottom:16, textAlign:"center" }}>
+          {mensaje}
+        </div>
+      )}
+
+      {esMariel && (
+        <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20, marginBottom:20 }}>
+          <div style={{ fontSize:15, fontFamily:"Georgia,serif", marginBottom:16 }}>Nueva solicitud</div>
+          <select value={nuevo.profesional_email} onChange={e => setNuevo({...nuevo, profesional_email: e.target.value})}
+            style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:"1px solid #E5E5E3", fontSize:13, marginBottom:10, outline:"none", background:"#fff" }}>
+            <option value="">Seleccionar profesional...</option>
+            {EMAILS_PROFESIONALES.map(e => (
+              <option key={e} value={e}>{PROFESIONALES[e]?.nombre} - {e}</option>
+            ))}
+          </select>
+          <input value={nuevo.documento} onChange={e => setNuevo({...nuevo, documento: e.target.value})} placeholder="Nombre del documento solicitado"
+            style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:"1px solid #E5E5E3", fontSize:13, marginBottom:10, outline:"none", boxSizing:"border-box" as const }} />
+          <input value={nuevo.descripcion} onChange={e => setNuevo({...nuevo, descripcion: e.target.value})} placeholder="Descripcion o nota adicional (opcional)"
+            style={{ width:"100%", padding:"9px 12px", borderRadius:8, border:"1px solid #E5E5E3", fontSize:13, marginBottom:12, outline:"none", boxSizing:"border-box" as const }} />
+          <button onClick={crear}
+            style={{ padding:"9px 20px", borderRadius:8, border:"none", background:colorBtn, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer" }}>
+            Enviar solicitud
+          </button>
+        </div>
+      )}
+
+      <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
+        <div style={{ fontSize:15, fontFamily:"Georgia,serif", marginBottom:16 }}>
+          {esMariel ? "Todas las solicitudes" : "Mis documentos solicitados"}
+        </div>
+        {solicitudes.length === 0 && (
+          <div style={{ textAlign:"center", padding:"32px 0", color:"#999", fontSize:13 }}>No hay solicitudes aun</div>
+        )}
+        {solicitudes.map((sol, i) => (
+          <div key={i} style={{ padding:"12px 0", borderBottom: i < solicitudes.length-1 ? "1px solid #F0F0EE" : "none" }}>
+            <div style={{ display:"flex", alignItems:"flex-start", gap:12 }}>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:13, fontWeight:600, color:"#18181B" }}>{sol.documento}</div>
+                {sol.descripcion && <div style={{ fontSize:11, color:"#999", marginTop:2 }}>{sol.descripcion}</div>}
+                {esMariel && <div style={{ fontSize:11, color:"#A1A1AA", marginTop:2 }}>{PROFESIONALES[sol.profesional_email]?.nombre || sol.profesional_email}</div>}
+              </div>
+              <span style={{ padding:"3px 10px", borderRadius:99, fontSize:10, fontWeight:600, flexShrink:0,
+                background: sol.estado==="entregado" ? "#F0FDF4" : "#FFFBEB",
+                color: sol.estado==="entregado" ? "#15803D" : "#B45309" }}>
+                {sol.estado==="entregado" ? "Entregado" : "Pendiente"}
+              </span>
+            </div>
+            {!esMariel && sol.estado === "pendiente" && (
+              <div style={{ marginTop:8 }}>
+                <input ref={solSeleccionada === sol.id ? fileRef : undefined} type="file" style={{ display:"none" }}
+                  onChange={e => e.target.files && subirArchivo(sol, e.target.files[0])} />
+                <button onClick={() => { setSolSeleccionada(sol.id); setTimeout(() => fileRef.current?.click(), 100); }}
+                  disabled={subiendo === sol.id}
+                  style={{ padding:"6px 14px", borderRadius:7, border:"none", background:colorBtn, color:"#fff", fontSize:12, cursor:"pointer" }}>
+                  {subiendo === sol.id ? "Subiendo..." : "Subir documento"}
+                </button>
+              </div>
+            )}
+            {sol.archivo_url && (
+              <div style={{ marginTop:6 }}>
+                <a href={sol.archivo_url} target="_blank" rel="noreferrer"
+                  style={{ fontSize:12, color:colorBtn, textDecoration:"none" }}>Ver documento entregado</a>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -171,6 +278,7 @@ export default function App() {
   };
 
   const prof = user ? (PROFESIONALES[user.email] ?? { nombre: user.email, esp: "Portal", ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" }) : null;
+  const esMariel = user?.email === "marielgracha02@gmail.com";
 
   if (!user) return (
     <div style={{ minHeight:"100vh", background:"#1A1A18", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -248,36 +356,20 @@ export default function App() {
             </div>
             <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
               <div style={{ fontSize:17, fontFamily:"Georgia,serif", marginBottom:8 }}>Bienvenida, {prof!.nombre.split(" ").slice(0,3).join(" ")}</div>
-              <p style={{ fontSize:13, color:"#666", lineHeight:1.7 }}>Tu expediente digital de habilitacion esta listo. Usa el menu izquierdo para navegar entre las secciones.</p>
+              <p style={{ fontSize:13, color:"#666", lineHeight:1.7 }}>Tu expediente digital de habilitacion esta listo. Usa el menu izquierdo para navegar.</p>
             </div>
           </div>
         )}
 
-        {tab==="expediente" && (
-          <SeccionCarpetas carpetas={CARPETAS_EXPEDIENTE} seccion="expediente" email={user.email} p2={prof!.p2} />
-        )}
-
-        {tab==="inst" && (
-          <SeccionCarpetas carpetas={CARPETAS_INSTITUCIONAL} seccion="institucional" email={user.email} p2={prof!.p2} />
-        )}
-
-        {tab==="evidencias" && (
-          <SeccionCarpetas carpetas={["Fotos","Videos","Otros"]} seccion="evidencias" email={user.email} p2={prof!.p2} />
-        )}
+        {tab==="expediente" && <SeccionCarpetas carpetas={CARPETAS_EXPEDIENTE} seccion="expediente" email={user.email} p2={prof!.p2} />}
+        {tab==="inst" && <SeccionCarpetas carpetas={CARPETAS_INSTITUCIONAL} seccion="institucional" email={user.email} p2={prof!.p2} />}
+        {tab==="evidencias" && <SeccionCarpetas carpetas={["Fotos","Videos","Otros"]} seccion="evidencias" email={user.email} p2={prof!.p2} />}
+        {tab==="actas" && <SeccionCarpetas carpetas={["Capacitacion","Comites","Reuniones","Auditorias","Seguimientos"]} seccion="actas" email={user.email} p2={prof!.p2} />}
+        {tab==="solicitados" && <SeccionSolicitados email={user.email} p2={prof!.p2} esMariel={esMariel} />}
 
         {tab==="vencimientos" && (
           <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
             <div style={{ textAlign:"center", padding:"32px 0", color:"#999", fontSize:13 }}>No hay vencimientos registrados aun.</div>
-          </div>
-        )}
-
-        {tab==="actas" && (
-          <SeccionCarpetas carpetas={["Capacitacion","Comites","Reuniones","Auditorias","Seguimientos"]} seccion="actas" email={user.email} p2={prof!.p2} />
-        )}
-
-        {tab==="solicitados" && (
-          <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
-            <div style={{ textAlign:"center", padding:"32px 0", color:"#999", fontSize:13 }}>No hay solicitudes pendientes.</div>
           </div>
         )}
 
