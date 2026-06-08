@@ -179,14 +179,13 @@ function SeccionVencimientos({ email, p2, esMariel }: { email: string; p2: strin
     cargar();
   };
 
-  const vencidos = vencimientos.filter(v => getEstado(v.fecha_vencimiento).label === "Vencido");
-  const proximos = vencimientos.filter(v => getEstado(v.fecha_vencimiento).label !== "Vencido" && getEstado(v.fecha_vencimiento).color === "#B45309");
-  const vigentes = vencimientos.filter(v => getEstado(v.fecha_vencimiento).color === "#15803D");
+  const vencidos = vencimientos.filter(v => getEstado(v.fecha_vencimiento).punto === "#B91C1C");
+  const proximos = vencimientos.filter(v => getEstado(v.fecha_vencimiento).punto === "#B45309");
+  const vigentes = vencimientos.filter(v => getEstado(v.fecha_vencimiento).punto === "#15803D");
 
   return (
     <div>
       {mensaje && <div style={{ padding:"9px 12px", borderRadius:8, background:mensaje.includes("Error")?"#FEF2F2":"#F0FDF4", color:mensaje.includes("Error")?"#B91C1C":"#15803D", fontSize:12, marginBottom:16, textAlign:"center" }}>{mensaje}</div>}
-
       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:20 }}>
         {[{n:vencidos.length,label:"Vencidos",c:"#B91C1C"},{n:proximos.length,label:"Por vencer",c:"#B45309"},{n:vigentes.length,label:"Vigentes",c:"#15803D"}].map((c,i) => (
           <div key={i} style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:18 }}>
@@ -195,7 +194,6 @@ function SeccionVencimientos({ email, p2, esMariel }: { email: string; p2: strin
           </div>
         ))}
       </div>
-
       <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20, marginBottom:20 }}>
         <div style={{ fontSize:15, fontFamily:"Georgia,serif", marginBottom:16 }}>Registrar vencimiento</div>
         {esMariel && (
@@ -218,7 +216,6 @@ function SeccionVencimientos({ email, p2, esMariel }: { email: string; p2: strin
           Registrar
         </button>
       </div>
-
       <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
         <div style={{ fontSize:15, fontFamily:"Georgia,serif", marginBottom:16 }}>Control de vencimientos</div>
         {vencimientos.length === 0 && <div style={{ textAlign:"center", padding:"24px 0", color:"#999", fontSize:13 }}>No hay vencimientos registrados aun</div>}
@@ -335,6 +332,66 @@ function SeccionSolicitados({ email, p2, esMariel }: { email: string; p2: string
   );
 }
 
+function PanelMariel({ onVerPortal }: { onVerPortal: (email: string) => void }) {
+  const [stats, setStats] = useState<Record<string, { solicitudes: number; vencidos: number }>>({});
+
+  useEffect(() => {
+    const cargarStats = async () => {
+      const { data: solic } = await sb.from("solicitudes").select("profesional_email, estado");
+      const { data: venc } = await sb.from("vencimientos").select("profesional_email, fecha_vencimiento");
+      const s: Record<string, { solicitudes: number; vencidos: number }> = {};
+      EMAILS_PROFESIONALES.forEach(e => { s[e] = { solicitudes: 0, vencidos: 0 }; });
+      (solic || []).forEach((sol: any) => { if (sol.estado === "pendiente" && s[sol.profesional_email]) s[sol.profesional_email].solicitudes++; });
+      (venc || []).forEach((v: any) => { if (getEstado(v.fecha_vencimiento).punto === "#B91C1C" && s[v.profesional_email]) s[v.profesional_email].vencidos++; });
+      setStats(s);
+    };
+    cargarStats();
+  }, []);
+
+  return (
+    <div style={{ flex:1, background:"#F8F8F7", padding:"28px 32px" }}>
+      <div style={{ fontSize:22, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:4 }}>Panel de Profesionales</div>
+      <div style={{ fontSize:12, color:"#999", marginBottom:24 }}>Haz clic en un profesional para ver su portal</div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))", gap:14 }}>
+        {EMAILS_PROFESIONALES.map(email => {
+          const p = PROFESIONALES[email];
+          const s = stats[email] || { solicitudes: 0, vencidos: 0 };
+          return (
+            <div key={email} onClick={() => onVerPortal(email)}
+              style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:12, overflow:"hidden", cursor:"pointer", transition:"box-shadow .15s" }}
+              onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,.1)")}
+              onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}>
+              <div style={{ background:p.p1, padding:"16px 16px 14px" }}>
+                <div style={{ width:40, height:40, borderRadius:10, background:p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.2)":p.p2+"30", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:10 }}>
+                  <div style={{ width:20, height:20, borderRadius:5, background:p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.6)":p.p2 }}></div>
+                </div>
+                <div style={{ fontSize:13, fontWeight:600, color:"#fff", lineHeight:1.3 }}>{p.nombre}</div>
+                <div style={{ fontSize:10, color:p.p2==="white"||p.p2==="#FFFFFF"?"rgba(255,255,255,.7)":p.p2, marginTop:3, textTransform:"uppercase" as const, letterSpacing:".05em" }}>{p.esp}</div>
+              </div>
+              <div style={{ padding:"12px 16px", display:"flex", gap:12 }}>
+                {s.vencidos > 0 && (
+                  <span style={{ fontSize:10, color:"#B91C1C", background:"#FEF2F2", padding:"2px 8px", borderRadius:99, fontWeight:600 }}>
+                    {s.vencidos} vencido{s.vencidos > 1 ? "s" : ""}
+                  </span>
+                )}
+                {s.solicitudes > 0 && (
+                  <span style={{ fontSize:10, color:"#B45309", background:"#FFFBEB", padding:"2px 8px", borderRadius:99, fontWeight:600 }}>
+                    {s.solicitudes} pendiente{s.solicitudes > 1 ? "s" : ""}
+                  </span>
+                )}
+                {s.vencidos === 0 && s.solicitudes === 0 && (
+                  <span style={{ fontSize:10, color:"#15803D", background:"#F0FDF4", padding:"2px 8px", borderRadius:99, fontWeight:600 }}>Al dia</span>
+                )}
+                <span style={{ fontSize:10, color:"#999", marginLeft:"auto" }}>Ver portal →</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
@@ -342,6 +399,7 @@ export default function App() {
   const [err, setErr] = useState("");
   const [user, setUser] = useState<any>(null);
   const [tab, setTab] = useState("inicio");
+  const [portalViendo, setPortalViendo] = useState<string | null>(null);
 
   const login = async () => {
     setLoading(true);
@@ -352,8 +410,9 @@ export default function App() {
     setLoading(false);
   };
 
-  const prof = user ? (PROFESIONALES[user.email] ?? { nombre: user.email, esp: "Portal", ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" }) : null;
   const esMariel = user?.email === "marielgracha02@gmail.com";
+  const emailActivo = portalViendo || user?.email || "";
+  const prof = PROFESIONALES[emailActivo] ?? { nombre: emailActivo, esp: "Portal", ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" };
 
   if (!user) return (
     <div style={{ minHeight:"100vh", background:"#1A1A18", display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -376,7 +435,13 @@ export default function App() {
     </div>
   );
 
-  const menu = [
+  const menuMariel = [
+    { id:"panel",         label:"Mis Profesionales" },
+    { id:"solicitados",   label:"Solicitados" },
+    { id:"vencimientos",  label:"Vencimientos" },
+  ];
+
+  const menuProf = [
     { id:"inicio",        label:"Inicio" },
     { id:"prestador",     label:"Datos del Prestador" },
     { id:"expediente",    label:"Expediente" },
@@ -388,18 +453,54 @@ export default function App() {
     { id:"visita",        label:"Modo Visita" },
   ];
 
+  if (esMariel && !portalViendo) {
+    return (
+      <div style={{ display:"flex", minHeight:"100vh", fontFamily:"Arial,sans-serif" }}>
+        <div style={{ width:220, background:"#1A1A18", flexShrink:0, display:"flex", flexDirection:"column" }}>
+          <div style={{ padding:"20px 16px", borderBottom:"1px solid rgba(255,255,255,.1)" }}>
+            <div style={{ fontSize:14, color:"#fff", fontWeight:600 }}>Mariel Grajales</div>
+            <div style={{ fontSize:10, color:"#C9A84C", marginTop:3, textTransform:"uppercase" as const }}>Habilitadora</div>
+          </div>
+          <div style={{ padding:"10px 8px", flex:1 }}>
+            {menuMariel.map(m => (
+              <button key={m.id} onClick={() => setTab(m.id)}
+                style={{ display:"block", width:"100%", textAlign:"left" as const, padding:"9px 11px", borderRadius:7, marginBottom:2, border:"none", cursor:"pointer", background:tab===m.id?"rgba(201,168,76,.25)":"transparent", color:tab===m.id?"#C9A84C":"rgba(255,255,255,.7)", fontSize:13, fontWeight:tab===m.id?600:400 }}>
+                {m.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ padding:"12px 10px", borderTop:"1px solid rgba(255,255,255,.1)" }}>
+            <button onClick={() => { sb.auth.signOut(); setUser(null); }}
+              style={{ width:"100%", padding:"7px", border:"1px solid rgba(255,255,255,.2)", background:"transparent", color:"rgba(255,255,255,.6)", borderRadius:7, cursor:"pointer", fontSize:12 }}>
+              Cerrar sesion
+            </button>
+          </div>
+        </div>
+        {tab === "panel" && <PanelMariel onVerPortal={email => { setPortalViendo(email); setTab("inicio"); }} />}
+        {tab === "solicitados" && <div style={{ flex:1, padding:"28px 32px", background:"#F8F8F7" }}><SeccionSolicitados email={user.email} p2="#C9A84C" esMariel={true} /></div>}
+        {tab === "vencimientos" && <div style={{ flex:1, padding:"28px 32px", background:"#F8F8F7" }}><SeccionVencimientos email={user.email} p2="#C9A84C" esMariel={true} /></div>}
+      </div>
+    );
+  }
+
   return (
     <div style={{ display:"flex", minHeight:"100vh", fontFamily:"Arial,sans-serif" }}>
-      <div style={{ width:220, background:prof!.p1, flexShrink:0, display:"flex", flexDirection:"column" }}>
+      <div style={{ width:220, background:prof.p1, flexShrink:0, display:"flex", flexDirection:"column" }}>
         <div style={{ padding:"20px 16px", borderBottom:"1px solid rgba(255,255,255,.1)" }}>
-          <div style={{ fontSize:14, color:"#fff", fontWeight:600, lineHeight:1.4 }}>{prof!.nombre}</div>
-          <div style={{ fontSize:10, color:prof!.p2, marginTop:3, textTransform:"uppercase" as const, letterSpacing:".06em" }}>{prof!.esp}</div>
-          <div style={{ fontSize:10, color:"rgba(255,255,255,.4)", marginTop:2 }}>{prof!.ciudad}</div>
+          {portalViendo && (
+            <button onClick={() => { setPortalViendo(null); setTab("panel"); }}
+              style={{ background:"rgba(255,255,255,.1)", border:"none", color:"rgba(255,255,255,.7)", padding:"4px 10px", borderRadius:6, fontSize:11, cursor:"pointer", marginBottom:10, width:"100%" }}>
+              Volver al panel
+            </button>
+          )}
+          <div style={{ fontSize:14, color:"#fff", fontWeight:600, lineHeight:1.4 }}>{prof.nombre}</div>
+          <div style={{ fontSize:10, color:prof.p2, marginTop:3, textTransform:"uppercase" as const, letterSpacing:".06em" }}>{prof.esp}</div>
+          <div style={{ fontSize:10, color:"rgba(255,255,255,.4)", marginTop:2 }}>{prof.ciudad}</div>
         </div>
         <div style={{ padding:"10px 8px", flex:1 }}>
-          {menu.map(m => (
+          {menuProf.map(m => (
             <button key={m.id} onClick={() => setTab(m.id)}
-              style={{ display:"block", width:"100%", textAlign:"left" as const, padding:"9px 11px", borderRadius:7, marginBottom:2, border:"none", cursor:"pointer", background:tab===m.id?prof!.p2+"30":"transparent", color:tab===m.id?prof!.p2:"rgba(255,255,255,.7)", fontSize:13, fontWeight:tab===m.id?600:400 }}>
+              style={{ display:"block", width:"100%", textAlign:"left" as const, padding:"9px 11px", borderRadius:7, marginBottom:2, border:"none", cursor:"pointer", background:tab===m.id?prof.p2+"30":"transparent", color:tab===m.id?prof.p2:"rgba(255,255,255,.7)", fontSize:13, fontWeight:tab===m.id?600:400 }}>
               {m.label}
             </button>
           ))}
@@ -415,14 +516,14 @@ export default function App() {
 
       <div style={{ flex:1, background:"#F8F8F7", padding:"28px 32px" }}>
         <div style={{ fontSize:22, fontFamily:"Georgia,serif", color:"#18181B", marginBottom:4 }}>
-          {menu.find(m => m.id===tab)?.label}
+          {menuProf.find(m => m.id===tab)?.label}
         </div>
-        <div style={{ fontSize:12, color:"#999", marginBottom:24 }}>Portal de Habilitacion - {prof!.nombre}</div>
+        <div style={{ fontSize:12, color:"#999", marginBottom:24 }}>Portal de Habilitacion - {prof.nombre}</div>
 
         {tab==="inicio" && (
           <div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:20 }}>
-              {[{n:"0",label:"Docs vigentes",c:"#15803D"},{n:"0",label:"Por vencer",c:"#B45309"},{n:"0",label:"Vencidos",c:"#B91C1C"},{n:"0",label:"Pendientes",c:prof!.p2==="white"?"#C9A84C":prof!.p2}].map((c,i) => (
+              {[{n:"0",label:"Docs vigentes",c:"#15803D"},{n:"0",label:"Por vencer",c:"#B45309"},{n:"0",label:"Vencidos",c:"#B91C1C"},{n:"0",label:"Pendientes",c:prof.p2==="#FFFFFF"?"#C9A84C":prof.p2}].map((c,i) => (
                 <div key={i} style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:18 }}>
                   <div style={{ fontSize:32, fontFamily:"Georgia,serif", color:c.c }}>{c.n}</div>
                   <div style={{ fontSize:11, color:"#999", marginTop:4 }}>{c.label}</div>
@@ -430,23 +531,23 @@ export default function App() {
               ))}
             </div>
             <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:20 }}>
-              <div style={{ fontSize:17, fontFamily:"Georgia,serif", marginBottom:8 }}>Bienvenida, {prof!.nombre.split(" ").slice(0,3).join(" ")}</div>
+              <div style={{ fontSize:17, fontFamily:"Georgia,serif", marginBottom:8 }}>Bienvenida, {prof.nombre.split(" ").slice(0,3).join(" ")}</div>
               <p style={{ fontSize:13, color:"#666", lineHeight:1.7 }}>Tu expediente digital de habilitacion esta listo. Usa el menu izquierdo para navegar.</p>
             </div>
           </div>
         )}
 
-        {tab==="expediente" && <SeccionCarpetas carpetas={CARPETAS_EXPEDIENTE} seccion="expediente" email={user.email} p2={prof!.p2} />}
-        {tab==="inst" && <SeccionCarpetas carpetas={CARPETAS_INSTITUCIONAL} seccion="institucional" email={user.email} p2={prof!.p2} />}
-        {tab==="evidencias" && <SeccionCarpetas carpetas={["Fotos","Videos","Otros"]} seccion="evidencias" email={user.email} p2={prof!.p2} />}
-        {tab==="actas" && <SeccionCarpetas carpetas={["Capacitacion","Comites","Reuniones","Auditorias","Seguimientos"]} seccion="actas" email={user.email} p2={prof!.p2} />}
-        {tab==="solicitados" && <SeccionSolicitados email={user.email} p2={prof!.p2} esMariel={esMariel} />}
-        {tab==="vencimientos" && <SeccionVencimientos email={user.email} p2={prof!.p2} esMariel={esMariel} />}
+        {tab==="expediente" && <SeccionCarpetas carpetas={CARPETAS_EXPEDIENTE} seccion="expediente" email={emailActivo} p2={prof.p2} />}
+        {tab==="inst" && <SeccionCarpetas carpetas={CARPETAS_INSTITUCIONAL} seccion="institucional" email={emailActivo} p2={prof.p2} />}
+        {tab==="evidencias" && <SeccionCarpetas carpetas={["Fotos","Videos","Otros"]} seccion="evidencias" email={emailActivo} p2={prof.p2} />}
+        {tab==="actas" && <SeccionCarpetas carpetas={["Capacitacion","Comites","Reuniones","Auditorias","Seguimientos"]} seccion="actas" email={emailActivo} p2={prof.p2} />}
+        {tab==="solicitados" && <SeccionSolicitados email={emailActivo} p2={prof.p2} esMariel={esMariel && !portalViendo} />}
+        {tab==="vencimientos" && <SeccionVencimientos email={emailActivo} p2={prof.p2} esMariel={esMariel && !portalViendo} />}
 
         {tab==="prestador" && (
           <div style={{ background:"#fff", border:"1px solid #E5E5E3", borderRadius:10, padding:24 }}>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:20 }}>
-              {[["Nombre",prof!.nombre],["Especialidad",prof!.esp],["Ciudad",prof!.ciudad],["Responsable","Mariel Grajales"]].map(([k,v]) => (
+              {[["Nombre",prof.nombre],["Especialidad",prof.esp],["Ciudad",prof.ciudad],["Responsable","Mariel Grajales"]].map(([k,v]) => (
                 <div key={k}>
                   <div style={{ fontSize:10, textTransform:"uppercase" as const, letterSpacing:".07em", color:"#999", marginBottom:4 }}>{k}</div>
                   <div style={{ fontSize:13, color:"#18181B" }}>{v}</div>
