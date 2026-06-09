@@ -597,7 +597,7 @@ export default function App() {
             Volver al panel
           </button>
         )}
-        <div style={{ width:44, height:44, borderRadius:12, background:prof.p2==="white"||prof.p2==="#FFFFFF"?"rgba(255,255,255,.15)":prof.p2+"25", border:"1px solid " + (prof.p2==="white"||prof.p2==="#FFFFFF"?"rgba(255,255,255,.2)":prof.p2+"40"), marginBottom:14, display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <div style={{ width:44, height:44, borderRadius:12, display:prof.logo?"none":"flex", background:prof.p2==="white"||prof.p2==="#FFFFFF"?"rgba(255,255,255,.15)":prof.p2+"25", border:"1px solid " + (prof.p2==="white"||prof.p2==="#FFFFFF"?"rgba(255,255,255,.2)":prof.p2+"40"), marginBottom:14, display:"flex", alignItems:"center", justifyContent:"center" }}>
           <div style={{ width:20, height:20, borderRadius:6, background:prof.p2==="white"||prof.p2==="#FFFFFF"?"rgba(255,255,255,.6)":prof.p2, opacity:.8 }}></div>
         </div>
         <div style={{ fontSize:14, color:"#fff", fontWeight:600, lineHeight:1.4 }}>{prof.logo && <img src={prof.logo} style={{width:70,height:70,borderRadius:"50%",objectFit:"cover",display:"block",margin:"0 auto 8px"}} />}{prof.nombre}</div>
