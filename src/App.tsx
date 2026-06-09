@@ -9,7 +9,7 @@ const sb = createClient(
 const PROFESIONALES: Record<string, { nombre: string; esp: string; ciudad: string; p1: string; p2: string }> = {
   "marielgracha02@gmail.com":      { nombre: "Mariel Grajales",               esp: "Habilitadora",                         ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
   "pilar.villegas@portal.co":      { nombre: "Dra. Maria del Pilar Villegas", esp: "Dermatologia",                         ciudad: "Pereira", p1: "#1A1A18", p2: "#C9A84C" },
-  "cesar.grajales@portal.co":      { nombre: "Dr. Cesar Grajales",            esp: "Ginecologia y Obstetricia",            ciudad: "Pereira", p1: "#1A3A5C", p2: "#5BA4CF" },
+  "cesar.grajales@portal.co":      { nombre: "DR. Cesar Grajales",            esp: "Ginecologia y Obstetricia",            ciudad: "Pereira", p1: "#1A3A5C", p2: "#5BA4CF", logo: "https://rdjzatmogwetermlacsq.supabase.co/storage/v1/object/public/documentos/logos/cesar.grajales.png" },
   "maida.agudelo@portal.co":       { nombre: "Dra. Maida Agudelo",            esp: "Otorrinolaringologia",                 ciudad: "Pereira", p1: "#1A4A3A", p2: "#5EC4A8" },
   "fredy.ortiz@portal.co":         { nombre: "Dr. Fredy Ortiz",               esp: "Cirugia Plastica",                     ciudad: "Pereira", p1: "#2A2A2A", p2: "#C8C8C8" },
   "laura.canon@portal.co":         { nombre: "Dra. Laura Canon",              esp: "Psiquiatria Infancia y Adolescencia",  ciudad: "Pereira", p1: "#1A2A4A", p2: "#7EC8C8" },
